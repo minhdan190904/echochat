@@ -1,11 +1,11 @@
 package com.example.echochat
 
 import android.app.Application
-import com.example.echochat.network.TokenManager
+import com.example.echochat.repository.SharedPreferencesReManager
 
 class MyApplication: Application() {
     override fun onCreate() {
         super.onCreate()
-        TokenManager.init(applicationContext)
+        SharedPreferencesReManager.init(applicationContext)
     }
 }

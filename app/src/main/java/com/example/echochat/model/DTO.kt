@@ -12,5 +12,11 @@ data class RegisterDTO(
 )
 
 data class ResLoginDTO(
-    val token: String
+    val token: String,
+    val user: User
+)
+
+data class MessageDTO(
+    val message: Message,
+    val idChat: Int
 )

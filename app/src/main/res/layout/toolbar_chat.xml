@@ -44,7 +44,6 @@
                 android:layout_alignParentTop="true"
                 android:layout_centerInParent="true"
                 android:fontFamily="@font/sf_pro_display_medium"
-                android:text="@{viewModel.chat.chatTitle}"
                 android:textColor="?attr/colorOnPrimary"
                 android:textSize="@dimen/conversation_person_name_text_size"
                 app:layout_constraintBottom_toTopOf="@id/tv_user_last_seen"

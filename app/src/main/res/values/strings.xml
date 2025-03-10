@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Chat Application</string>
+    <string name="app_name">Echo Chat</string>
     <string name="toolbar_conversations">Conversations</string>
     <string name="hint_search">Search for friends</string>
     <string name="hint_type_message">Start typing...</string>

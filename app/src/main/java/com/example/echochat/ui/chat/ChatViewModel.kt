@@ -9,12 +9,14 @@ import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
 import com.example.echochat.network.NetworkResource
+import com.example.echochat.network.api.ApiClient
 import com.example.echochat.repository.UserRepository
+import com.example.echochat.util.generateTime
 import kotlinx.coroutines.launch
 
 
 class ChatViewModel (
-    private val userRepository: UserRepository = UserRepository()
+    private val userRepository: UserRepository = UserRepository(ApiClient.apiService)
 ) : ViewModel() {
 
     private var chatId: Int? = null
@@ -48,7 +50,7 @@ class ChatViewModel (
 
     fun onClickSendMessage() {
         messageText.value?.let { msg ->
-            val message = Message(userRepository.myUser, msg, "10:08 AM")
+            val message = Message(userRepository.myUser, msg, generateTime())
             chatId?.let {
                 viewModelScope.launch {
                     val response = userRepository.sendMessage(it, message)

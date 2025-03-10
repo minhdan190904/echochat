@@ -14,31 +14,34 @@ import androidx.navigation.fragment.navArgs
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentChatBinding
 import com.example.echochat.model.Chat
-import com.example.echochat.model.GroupChat
 import com.example.echochat.model.Message
-import com.example.echochat.model.NormalChat
+import com.example.echochat.model.MessageDTO
+import com.example.echochat.model.User
+import com.example.echochat.network.api.ApiClient.httpClient
+import com.example.echochat.network.api.ApiClient.request
+import com.example.echochat.util.MY_USER_ID
+import com.example.echochat.util.RECEIVER_ID
 import com.example.echochat.util.toast
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import java.util.concurrent.TimeUnit
 
 class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
     private val viewModel: ChatViewModel by viewModels()
     private val args: ChatFragmentArgs by navArgs()
     private val chatAdapter = ChatAdapter()
-
     private val chatTempList = mutableListOf<Message>()
-
+    private val gson = Gson()
     private lateinit var webSocket: WebSocket
+    private var isNotInit: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel.getChat(args.chatId)
+        Log.i("MYTAG", "ChatId: ${args.chatId}")
         connectWebSocket()
     }
 
@@ -62,12 +65,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun connectWebSocket() {
-        val client = OkHttpClient.Builder()
-            .readTimeout(3, TimeUnit.SECONDS)
-            .build()
-
-        val request = Request.Builder().url("ws://135b-2001-ee0-1ac0-2f6d-7caf-f89e-c483-be13.ngrok-free.app/chat").build()
-        webSocket = client.newWebSocket(request, object : WebSocketListener() {
+        webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
                     toast("Connected")
@@ -76,9 +74,20 @@ class ChatFragment : Fragment() {
 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 lifecycleScope.launch {
-                    toast("Message received: $text")
+                    try {
+                        val messageDTO = gson.fromJson(text, MessageDTO::class.java)
+                        chatTempList.add(messageDTO.message)
+
+                        if (MY_USER_ID != messageDTO.message.sender?.id && messageDTO.idChat == args.chatId) {
+                            chatAdapter.submitList(chatTempList.toList())
+                            binding.messagesRecyclerView.smoothScrollToPosition(chatTempList.size - 1)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("WebSocket", "JSON Parse Error: ${e.message}")
+                    }
                 }
             }
+
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 lifecycleScope.launch {
@@ -89,13 +98,11 @@ class ChatFragment : Fragment() {
         })
     }
 
-
     private fun initView() {
         with(binding) {
             messagesRecyclerView.setHasFixedSize(true)
             messagesRecyclerView.adapter = chatAdapter
 
-            //This helps to scroll to the last message when keyboard is opened
             messagesRecyclerView.addOnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
                 if (bottom < oldBottom)
                     messagesRecyclerView.layoutManager?.smoothScrollToPosition(
@@ -107,45 +114,49 @@ class ChatFragment : Fragment() {
         }
     }
 
-
     private fun observeValues() {
         viewModel.chat.observe(viewLifecycleOwner) { chat ->
             chatAdapter.submitList(chat.messageList)
             chatTempList.clear()
             chatTempList.addAll(chat.messageList)
-            chatTempList.lastOrNull()?.message?.let { webSocket.send(it) }
-            binding.messagesRecyclerView.scrollToPosition(chat.messageList.size - 1)
-            initToolbar(chat)
+
+            if (chatTempList.isNotEmpty()) {
+                binding.messagesRecyclerView.post {
+                    binding.messagesRecyclerView.scrollToPosition(chatTempList.size - 1)
+                }
+            }
+
+            val receiver = if (chat.user1.id == MY_USER_ID) chat.user2 else chat.user1
+
+            if (isNotInit) {
+                val lastMessage = chat.getLastMessage()
+                if (lastMessage != null) {
+                    val jsonMessage = gson.toJson(chat.id?.let { MessageDTO(lastMessage, it) })
+                    webSocket.send(jsonMessage)
+                }
+            }
+
+            isNotInit = true
+
+            initToolbar(receiver)
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()
         webSocket.close(1000, "Fragment destroyed")
     }
 
-
-
     private fun setClicks() {
         binding.toolbar.iconBack.setOnClickListener { findNavController().popBackStack() }
     }
 
-    private fun initToolbar(chat: Chat) {
-
-        when (chat) {
-            is GroupChat -> {
-                binding.toolbar.tvUserLastSeen.isVisible = false
-            }
-            is NormalChat -> {
-                binding.toolbar.tvUserLastSeen.isVisible = true
-                val lastSeenTime = chat.receiver.lastSeen
-                binding.toolbar.tvUserLastSeen.text =
-                    if (chat.receiver.isOnline) getString(R.string.text_active_now)
-                    else getString(R.string.last_seen_time, lastSeenTime)
-            }
-        }
-
+    private fun initToolbar(receiver: User) {
+        binding.toolbar.tvUserLastSeen.isVisible = true
+        val lastSeenTime = receiver.lastSeen
+        binding.toolbar.tvUserLastSeen.text =
+            if (receiver.isOnline) getString(R.string.text_active_now)
+            else getString(R.string.last_seen_time, lastSeenTime)
     }
-
-
 }

@@ -1,5 +1,6 @@
 package com.example.echochat.ui.auth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,10 @@ import com.example.echochat.model.ResLoginDTO
 import com.example.echochat.model.User
 import com.example.echochat.network.api.ApiClient
 import com.example.echochat.repository.AuthRepository
+import com.example.echochat.repository.SharedPreferencesReManager
+import com.example.echochat.util.MY_USER_ID
+import com.example.echochat.util.TOKEN_KEY
+import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -81,6 +86,9 @@ class AuthViewModel: ViewModel() {
                 when (resResponse.statusCode) {
                     200 -> {
                         _login.value = UiState.Success(resResponse.data)
+                        SharedPreferencesReManager.saveData(TOKEN_KEY, resResponse.data.token)
+                        SharedPreferencesReManager.saveData(USER_SESSION, resResponse.data.user)
+                        MY_USER_ID = resResponse.data.user.id!!
                     }
                     401 -> {
                         _login.value = UiState.Failure("Username or password is incorrect")
@@ -102,6 +110,16 @@ class AuthViewModel: ViewModel() {
             } catch (ex: Exception) {
                 _register.value = UiState.Failure(ex.message ?: "Unexpected error")
             }
+        }
+    }
+
+    fun getSession(result: (User?) -> Unit) {
+        val user = SharedPreferencesReManager.getData(USER_SESSION, User::class.java)
+        if(user != null){
+            MY_USER_ID = user.id!!
+            result.invoke(user)
+        } else {
+            Log.i("SESSION_TAG", "12321")
         }
     }
 

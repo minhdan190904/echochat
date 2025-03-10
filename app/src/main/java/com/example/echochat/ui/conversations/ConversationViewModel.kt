@@ -6,14 +6,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
+import com.example.echochat.model.MessageDTO
 import com.example.echochat.model.User
 import com.example.echochat.network.NetworkResource
+import com.example.echochat.network.api.ApiClient
 import com.example.echochat.repository.UserRepository
 import kotlinx.coroutines.launch
 
 class ConversationViewModel: ViewModel() {
 
-    private var userRepository: UserRepository = UserRepository()
+    private var userRepository: UserRepository = UserRepository(ApiClient.apiService)
 
     private val _chatList = MutableLiveData<List<Chat>>()
     val chatList: LiveData<List<Chat>> = _chatList
@@ -50,6 +52,7 @@ class ConversationViewModel: ViewModel() {
             }
         }
     }
+
 
     fun getMyConversations() {
         viewModelScope.launch {

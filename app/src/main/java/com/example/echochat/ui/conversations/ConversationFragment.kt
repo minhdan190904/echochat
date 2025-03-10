@@ -9,18 +9,30 @@ import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.util.UiState
 import com.example.echochat.databinding.FragmentConversationBinding
-import com.example.echochat.model.NormalChat
+import com.example.echochat.model.MessageDTO
+import com.example.echochat.network.api.ApiClient.httpClient
+import com.example.echochat.network.api.ApiClient.request
+import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.hide
 import com.example.echochat.util.show
+import com.example.echochat.util.toast
+import com.google.gson.Gson
+import kotlinx.coroutines.launch
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
 class ConversationFragment : Fragment() {
     private lateinit var binding: FragmentConversationBinding
     private val viewModel: ConversationViewModel by viewModels()
     private lateinit var friendsListAdapter: FriendListAdapter
     private lateinit var chatListAdapter: ChatListAdapter
+    private val gson = Gson()
+    private lateinit var webSocket: WebSocket
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +52,36 @@ class ConversationFragment : Fragment() {
         initView()
         observeValues()
         setClicks()
+        connectWebSocket()
+    }
+
+    private fun connectWebSocket() {
+        webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                lifecycleScope.launch {
+                    toast("Connected")
+                }
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                lifecycleScope.launch {
+                    try {
+                        viewModel.getMyConversations()
+                        viewModel.getMyFriendList()
+                    } catch (e: Exception) {
+                        Log.e("WebSocket", "JSON Parse Error: ${e.message}")
+                    }
+                }
+            }
+
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                lifecycleScope.launch {
+                    toast(t.message.toString())
+                    Log.i("WebSocket", "Error: ${t.message}")
+                }
+            }
+        })
     }
 
     private fun initAdapters() {
@@ -87,9 +129,11 @@ class ConversationFragment : Fragment() {
 
         friendsListAdapter.setOnClick = { user ->
             val chat = chatListAdapter.currentList.find {
-                it is NormalChat && it.receiver.id == user.id
+                val otherUser = if (it.user1.id == MY_USER_ID) it.user2 else it.user1
+                otherUser.id == user.id
             }
-            (chat as? NormalChat)?.id?.let { chatId ->
+
+            chat?.id?.let { chatId ->
                 findNavController().navigate(
                     ConversationFragmentDirections.actionConversationFragmentToChatFragment(chatId)
                 )
