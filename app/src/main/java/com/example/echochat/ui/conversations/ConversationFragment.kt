@@ -3,22 +3,20 @@ package com.example.echochat.ui.conversations
 import ChatListAdapter
 import FriendListAdapter
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import com.example.echochat.util.UiState
 import com.example.echochat.databinding.FragmentConversationBinding
 import com.example.echochat.model.MessageDTO
 import com.example.echochat.network.api.ApiClient.httpClient
 import com.example.echochat.network.api.ApiClient.request
+import com.example.echochat.ui.chat.ChatActivity
+import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
-import com.example.echochat.util.hide
-import com.example.echochat.util.show
+import com.example.echochat.util.intentActivity
 import com.example.echochat.util.toast
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
@@ -42,6 +40,7 @@ class ConversationFragment : Fragment() {
         binding = FragmentConversationBinding.inflate(inflater, container, false).apply {
             lifecycleOwner = viewLifecycleOwner
         }
+
         return binding.root
     }
 
@@ -53,23 +52,24 @@ class ConversationFragment : Fragment() {
         observeValues()
         setClicks()
         connectWebSocket()
+
     }
 
     private fun connectWebSocket() {
         webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
-                    toast("Connected")
+//                    toast("Connected")
                 }
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 lifecycleScope.launch {
                     try {
-                        viewModel.getMyConversations()
-                        viewModel.getMyFriendList()
+                        val messageDTO = gson.fromJson(text, MessageDTO::class.java)
+                        viewModel.updateLastMessage(messageDTO)
                     } catch (e: Exception) {
-                        Log.e("WebSocket", "JSON Parse Error: ${e.message}")
+                        toast(e.message.toString())
                     }
                 }
             }
@@ -78,7 +78,6 @@ class ConversationFragment : Fragment() {
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 lifecycleScope.launch {
                     toast(t.message.toString())
-                    Log.i("WebSocket", "Error: ${t.message}")
                 }
             }
         })
@@ -107,23 +106,13 @@ class ConversationFragment : Fragment() {
             viewModel.getMyConversations()
             viewModel.getMyFriendList()
         }
-
-        viewModel.friendsUiState.observe(viewLifecycleOwner){
-           if(it is UiState.Loading){
-               binding.progressBar.show()
-           } else binding.progressBar.hide()
-        }
-
     }
 
     private fun setClicks() {
         chatListAdapter.setOnClick = { chat ->
-            Log.i("MYTAG", chat?.id.toString())
             chat.id?.let { chatId ->
-                Log.i("MYTAG", chat?.id.toString())
-                findNavController().navigate(
-                    ConversationFragmentDirections.actionConversationFragmentToChatFragment(chatId)
-                )
+                CHAT_ID = chatId
+                intentActivity(ChatActivity::class.java)
             }
         }
 
@@ -134,9 +123,8 @@ class ConversationFragment : Fragment() {
             }
 
             chat?.id?.let { chatId ->
-                findNavController().navigate(
-                    ConversationFragmentDirections.actionConversationFragmentToChatFragment(chatId)
-                )
+                CHAT_ID = chatId
+                intentActivity(ChatActivity::class.java)
             }
         }
     }

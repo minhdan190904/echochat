@@ -24,9 +24,7 @@ class LoginFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         viewModel.getSession { user ->
-            toast(user.toString())
-            toast(MY_USER_ID.toString())
-            findNavController().navigate(R.id.action_loginFragment_to_navigation_graph_main)
+            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
 //            binding.apply {
 //                etEmailLogin.setText(loginDTO?.username)
 //                etPasswordLogin.setText(loginDTO?.password)
@@ -88,7 +86,7 @@ class LoginFragment : Fragment() {
                     binding.btnConfirmSignIn.setText("Login")
                     binding.progressBarLoadNotification.hide()
                     toast(state.data.toString())
-                    findNavController().navigate(R.id.action_loginFragment_to_navigation_graph_main)
+                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                 }
 
                 UiState.HasData -> TODO()

@@ -1,6 +1,7 @@
 package com.example.echochat.ui.auth
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,6 +28,9 @@ class AuthViewModel: ViewModel() {
 
     private val _login = MutableLiveData<UiState<ResLoginDTO>>()
     val login: LiveData<UiState<ResLoginDTO>> = _login
+
+    private val _logout = MutableLiveData<String>()
+    val logout: LiveData<String> = _logout
 
     fun register(
         email: String,
@@ -83,6 +87,7 @@ class AuthViewModel: ViewModel() {
                         password = password
                     )
                 )
+
                 when (resResponse.statusCode) {
                     200 -> {
                         _login.value = UiState.Success(resResponse.data)
@@ -98,7 +103,7 @@ class AuthViewModel: ViewModel() {
                     }
                 }
             } catch (ex: HttpException) {
-                _register.value = UiState.Failure(
+                _login.value = UiState.Failure(
                     when (ex.code()) {
                         401 -> "Username or password is incorrect"
                         500 -> "Internal Server Error. Please try again later."
@@ -106,11 +111,19 @@ class AuthViewModel: ViewModel() {
                     }
                 )
             } catch (ex: IOException) {
-                _register.value = UiState.Failure("Network error. Please check your connection.")
+                _login.value = UiState.Failure("Network error. Please check your connection.")
             } catch (ex: Exception) {
-                _register.value = UiState.Failure(ex.message ?: "Unexpected error")
+                _login.value = UiState.Failure(ex.message ?: "Unexpected error")
             }
         }
+    }
+
+    fun logout() {
+        SharedPreferencesReManager.clearData(TOKEN_KEY)
+        SharedPreferencesReManager.clearData(USER_SESSION)
+        Log.i("LOGOUT", "LOGOUT")
+        MY_USER_ID = 1
+        _logout.value = "Logout"
     }
 
     fun getSession(result: (User?) -> Unit) {

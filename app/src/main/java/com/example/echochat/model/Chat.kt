@@ -24,4 +24,8 @@ class Chat(val user1: User, val user2: User, var id: Int? = null) {
     fun getOtherUser(currentUser: User): User {
         return if (currentUser.id == user1.id) user2 else user1
     }
+
+    fun getChatTitle(): String {
+        return if (MY_USER_ID == user1.id) user2.name else user1.name
+    }
 }

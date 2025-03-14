@@ -13,14 +13,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentChatBinding
-import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
 import com.example.echochat.model.MessageDTO
 import com.example.echochat.model.User
 import com.example.echochat.network.api.ApiClient.httpClient
 import com.example.echochat.network.api.ApiClient.request
+import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
-import com.example.echochat.util.RECEIVER_ID
 import com.example.echochat.util.toast
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
@@ -31,7 +30,6 @@ import okhttp3.WebSocketListener
 class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
     private val viewModel: ChatViewModel by viewModels()
-    private val args: ChatFragmentArgs by navArgs()
     private val chatAdapter = ChatAdapter()
     private val chatTempList = mutableListOf<Message>()
     private val gson = Gson()
@@ -40,8 +38,7 @@ class ChatFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.getChat(args.chatId)
-        Log.i("MYTAG", "ChatId: ${args.chatId}")
+        viewModel.getChat(CHAT_ID)
         connectWebSocket()
     }
 
@@ -68,7 +65,7 @@ class ChatFragment : Fragment() {
         webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
-                    toast("Connected")
+//                    toast("Connected")
                 }
             }
 
@@ -76,9 +73,8 @@ class ChatFragment : Fragment() {
                 lifecycleScope.launch {
                     try {
                         val messageDTO = gson.fromJson(text, MessageDTO::class.java)
-                        chatTempList.add(messageDTO.message)
-
-                        if (MY_USER_ID != messageDTO.message.sender?.id && messageDTO.idChat == args.chatId) {
+                        if (messageDTO.idChat == CHAT_ID && chatTempList.lastOrNull() != messageDTO.message) {
+                            chatTempList.add(messageDTO.message)
                             chatAdapter.submitList(chatTempList.toList())
                             binding.messagesRecyclerView.smoothScrollToPosition(chatTempList.size - 1)
                         }
@@ -149,7 +145,10 @@ class ChatFragment : Fragment() {
     }
 
     private fun setClicks() {
-        binding.toolbar.iconBack.setOnClickListener { findNavController().popBackStack() }
+        binding.toolbar.iconBack.setOnClickListener {
+            findNavController().popBackStack()
+            requireActivity().finish()
+        }
     }
 
     private fun initToolbar(receiver: User) {

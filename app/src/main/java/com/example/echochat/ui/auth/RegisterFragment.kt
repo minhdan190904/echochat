@@ -41,6 +41,10 @@ class RegisterFragment : Fragment() {
                 }
             }
         }
+
+        binding.btnBackToLogin.setOnClickListener {
+            findNavController().navigate(R.id.action_registerFragment_to_loginFragment)
+        }
     }
 
     private fun validation(): Boolean {
@@ -51,16 +55,16 @@ class RegisterFragment : Fragment() {
         viewModel.register.observe(viewLifecycleOwner) { state ->
             when(state){
                 is UiState.Loading -> {
-                    binding.btnConfirmSignUp.setText("")
+                    binding.btnConfirmSignUp.text = ""
                     binding.progressBarLoadNotification.show()
                 }
                 is UiState.Failure -> {
-                    binding.btnConfirmSignUp.setText("Register")
+                    binding.btnConfirmSignUp.text = "Register"
                     binding.progressBarLoadNotification.hide()
                     toast(state.error ?: "Lỗi đăng ký")
                 }
                 is UiState.Success -> {
-                    binding.btnConfirmSignUp.setText("Register")
+                    binding.btnConfirmSignUp.text = "Register"
                     binding.progressBarLoadNotification.hide()
                     toast(state.data.toString())
                     findNavController().navigate(R.id.action_registerFragment_to_loginFragment)

@@ -1,6 +1,7 @@
 package com.example.echochat.network.api
 
 import com.example.echochat.model.Chat
+import com.example.echochat.model.FriendRequestDTO
 import com.example.echochat.model.LoginDTO
 import com.example.echochat.model.Message
 import com.example.echochat.model.RegisterDTO
@@ -42,5 +43,8 @@ interface ApiService {
         @Query("chatId") chatId: Int,
         @Body message: Message
     ): ResResponse<Message>
+
+    @GET("/friends/{userId}")
+    suspend fun getFriendRequests(@Path("userId") userId: Int): ResResponse<List<FriendRequestDTO>>
 
 }

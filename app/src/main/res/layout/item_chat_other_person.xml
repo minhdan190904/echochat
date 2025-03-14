@@ -40,6 +40,7 @@
             android:layout_marginEnd="@dimen/margin_message"
             android:layout_marginBottom="4dp"
             android:background="@drawable/out_message_bg"
+            android:backgroundTint="@color/colorGrayLight"
             android:fontFamily="@font/sf_pro_display_regular"
             android:paddingStart="16dp"
             android:paddingTop="16dp"

@@ -12,4 +12,6 @@
     <dimen name="story_person_image_size">60dp</dimen>
     <dimen name="story_person_name_text_size">16sp</dimen>
     <dimen name="main_toolbar_text_size">22sp</dimen>
+    <dimen name="padding_height">40dp</dimen>
+    <dimen name="user_image_size">50dp</dimen>
 </resources>

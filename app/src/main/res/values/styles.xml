@@ -17,10 +17,23 @@
 
     <style name="Widget.AppTheme.MaterialComponents.CustomTextInputLayout"
         parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <item name="android:textColorHint">@color/colorGrayDusty</item>
-        <item name="boxBackgroundColor">@color/colorSilver</item>
-        <item name="boxStrokeWidth">1dp</item>
-        <item name="boxStrokeColor">@android:color/transparent</item>
+        <item name="android:textColorHint">@color/colorWhite</item>
+        <item name="boxBackgroundColor">@color/colorWhite</item>
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.AppTheme.RoundedCorner</item>
     </style>
+
+    <style name="BottomNavTextActive" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BottomNavTextInactive" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Theme.Echochat.NoTranslucent" parent="Base.Theme.Echochat">
+        <item name="android:windowTranslucentStatus">false</item>
+    </style>
+
+
 </resources>

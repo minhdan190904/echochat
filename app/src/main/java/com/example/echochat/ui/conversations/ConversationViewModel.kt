@@ -1,5 +1,6 @@
 package com.example.echochat.ui.conversations
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -44,12 +45,16 @@ class ConversationViewModel: ViewModel() {
             when (response) {
                 is NetworkResource.Success -> {
                     _friendsList.value = response.data
-                    _friendsUiState.value = UiState.HasData
 
                 }
-
-                else -> {}
+                is NetworkResource.Error -> {
+                    response.message?.let { Log.i("Error", it) }
+                }
+                is NetworkResource.NetworkException ->{
+                    response.message?.let { Log.i("Error", it) }
+                }
             }
+            _friendsUiState.value = UiState.HasData
         }
     }
 
@@ -61,12 +66,25 @@ class ConversationViewModel: ViewModel() {
             when (response) {
                 is NetworkResource.Success -> {
                     _chatList.value = response.data
-                    _chatUiState.value = UiState.HasData
 
                 }
-                is NetworkResource.Error -> TODO()
-                is NetworkResource.NetworkException -> TODO()
+                is NetworkResource.Error -> {
+                    response.message?.let { Log.i("Error", it) }
+                }
+                is NetworkResource.NetworkException ->{
+                    response.message?.let { Log.i("Error", it) }
+                }
             }
+            _chatUiState.value = UiState.HasData
         }
     }
+
+    fun updateLastMessage(messageDTO: MessageDTO) {
+        val updatedList = _chatList.value?.toMutableList() ?: return
+        val index = updatedList.indexOfFirst { it.id == messageDTO.idChat }
+        if (index != -1) {
+            getMyConversations()
+        }
+    }
+
 }

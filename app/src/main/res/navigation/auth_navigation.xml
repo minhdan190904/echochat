@@ -24,11 +24,14 @@
             android:id="@+id/action_loginFragment_to_registerFragment"
             app:destination="@id/registerFragment" />
         <action
-            android:id="@+id/action_loginFragment_to_navigation_graph_main"
-            app:destination="@id/navigation_graph_main" />
+            android:id="@+id/action_loginFragment_to_homeFragment"
+            app:destination="@id/homeFragment" />
     </fragment>
 
-
-    <include app:graph="@navigation/navigation_graph_main" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.echochat.ui.home.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" />
 
 </navigation>

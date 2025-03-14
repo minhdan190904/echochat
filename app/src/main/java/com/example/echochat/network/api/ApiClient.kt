@@ -1,8 +1,6 @@
 package com.example.echochat.network.api
 
 import com.example.echochat.repository.SharedPreferencesReManager
-import com.example.echochat.util.BASE_URL
-import com.example.echochat.util.BASE_URL_LOCAL_HOST
 import com.example.echochat.util.TOKEN_KEY
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -35,12 +33,13 @@ object ApiClient {
 
     val apiService: ApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl("https://f74a-2001-ee0-1a44-9f5e-cd8-7079-ba89-b341.ngrok-free.app/")
             .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
     }
 
-    val request: Request = Request.Builder().url("ws://4c92-2001-ee0-1ad2-54a0-9c5e-5d91-1c8-9cf1.ngrok-free.app/chat").build()
+    val request: Request = Request.Builder().url("ws://f74a-2001-ee0-1a44-9f5e-cd8-7079-ba89-b341.ngrok-free.app/chat").build()
+
 }

@@ -5,16 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="viewModel"
             type="com.example.echochat.ui.chat.ChatViewModel" />
-
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="false">
 
         <include
             android:id="@+id/toolbar"
@@ -60,9 +59,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/text_input_layout_write_message"
-
-            />
+            app:layout_constraintTop_toTopOf="@id/text_input_layout_write_message" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout_write_message"

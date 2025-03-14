@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="viewModel"
             type="com.example.echochat.ui.chat.ChatViewModel" />
-
     </data>
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar_conversation"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:background="?attr/colorPrimaryVariant"
+        android:layout_height="wrap_content"
         app:contentInsetStartWithNavigation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@color/colorPrimary"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -45,6 +42,7 @@
                 android:layout_centerInParent="true"
                 android:fontFamily="@font/sf_pro_display_medium"
                 android:textColor="?attr/colorOnPrimary"
+                android:text="@{viewModel.chat.chatTitle}"
                 android:textSize="@dimen/conversation_person_name_text_size"
                 app:layout_constraintBottom_toTopOf="@id/tv_user_last_seen"
                 app:layout_constraintEnd_toStartOf="@id/icon_settings"
