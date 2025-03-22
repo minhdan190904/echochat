@@ -8,6 +8,7 @@
         <variable
             name="viewModel"
             type="com.example.echochat.ui.chat.ChatViewModel" />
+        <import type="com.example.echochat.model.Message.MessageType"/>
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -60,6 +61,7 @@
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@id/text_input_layout_write_message" />
+        
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/text_input_layout_write_message"
@@ -96,7 +98,7 @@
             android:layout_marginEnd="24dp"
             android:background="@drawable/ic_send"
             android:enabled="@{viewModel.messageText.length()>0}"
-            android:onClick="@{()->viewModel.onClickSendMessage()}"
+            android:onClick="@{()->viewModel.sendTextMessage()}"
             app:layout_constraintBottom_toBottomOf="@id/text_input_layout_write_message"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/text_input_layout_write_message" />

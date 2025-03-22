@@ -56,16 +56,17 @@
             app:layout_constraintVertical_bias="0.0"
             tools:text="@tools:sample/lorem" />
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/image_message"
             imageUrl="@{listItem.message}"
             android:layout_width="@dimen/message_image_type_size"
-            android:layout_height="@dimen/message_image_type_size"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="@dimen/margin_message"
             android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
             app:layout_constrainedWidth="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -73,6 +74,7 @@
             app:layout_constraintStart_toEndOf="@id/image_profile"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.0"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.AppTheme.RoundedImage"
             tools:src="@tools:sample/avatars"
             tools:visibility="gone" />
 

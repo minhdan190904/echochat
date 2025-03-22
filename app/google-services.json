@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "458510703569",
+    "firebase_url": "https://minhdanmessage-default-rtdb.firebaseio.com",
+    "project_id": "minhdanmessage",
+    "storage_bucket": "minhdanmessage.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:458510703569:android:fb04e8230580da56d19ef0",
+        "android_client_info": {
+          "package_name": "com.example.echochat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzsf2wxJ-Zw-Rp0vCNk1oJnFDuQcZDDIY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

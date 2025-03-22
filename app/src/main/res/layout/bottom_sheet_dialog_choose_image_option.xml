@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/rounded_top">
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:layout_width="50dp"
+                android:layout_height="30dp"
+                android:scaleType="fitXY"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_dash" />
+
+            <TextView
+                android:id="@+id/tvChooseImageCamera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:drawablePadding="5dp"
+                android:text="Chọn ảnh từ camera"
+                android:textSize="20sp"
+                app:drawableStartCompat="@drawable/ic_camera"
+                app:drawableTint="@color/colorPrimary" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="35dp"
+                android:background="@color/colorGrayLight" />
+
+            <TextView
+                android:id="@+id/tvChooseImageGallery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:drawablePadding="5dp"
+                android:text="Chọn ảnh từ thư viện"
+                android:textSize="20sp"
+                app:drawableStartCompat="@drawable/ic_gallery"
+                app:drawableTint="@color/colorPrimary" />
+        </LinearLayout>
+
+</layout>

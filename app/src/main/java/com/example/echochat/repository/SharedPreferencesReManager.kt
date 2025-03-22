@@ -25,4 +25,8 @@ object  SharedPreferencesReManager {
     fun clearData(key: String) {
         prefs.edit().remove(key).apply()
     }
+
+    fun clearAllData() {
+        prefs.edit().clear().apply()
+    }
 }

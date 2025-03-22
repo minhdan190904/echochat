@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.echochat.databinding.FragmentConversationBinding
 import com.example.echochat.model.MessageDTO
 import com.example.echochat.network.api.ApiClient.httpClient
-import com.example.echochat.network.api.ApiClient.request
+import com.example.echochat.network.api.ApiClient.request_chat
 import com.example.echochat.ui.chat.ChatActivity
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
@@ -56,10 +56,9 @@ class ConversationFragment : Fragment() {
     }
 
     private fun connectWebSocket() {
-        webSocket = httpClient.newWebSocket(request, object : WebSocketListener() {
+        webSocket = httpClient.newWebSocket(request_chat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
-//                    toast("Connected")
                 }
             }
 
@@ -104,7 +103,6 @@ class ConversationFragment : Fragment() {
         }
         viewModel.searchQuery.observe(viewLifecycleOwner) { query ->
             viewModel.getMyConversations()
-            viewModel.getMyFriendList()
         }
     }
 

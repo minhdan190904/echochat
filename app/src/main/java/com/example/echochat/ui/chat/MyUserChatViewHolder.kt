@@ -14,8 +14,12 @@ class MyUserChatViewHolder private constructor(private val binding: ItemChatMeBi
     fun bind(item: Message) {
         binding.apply {
             listItem = item
-            imageMessage.isVisible = item.type == Message.MessageType.IMAGE
-            tvMessage.isVisible = item.type == Message.MessageType.TEXT
+            imageMessage.isVisible = when (item.messageType) {
+                Message.MessageType.IMAGE -> true
+                Message.MessageType.VIDEO -> true
+                else -> false
+            }
+            tvMessage.isVisible = item.messageType == Message.MessageType.TEXT
             executePendingBindings()
         }
 

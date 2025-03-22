@@ -8,7 +8,6 @@
             android:layout_height="wrap_content">
 
             <LinearLayout
-                android:id="@+id/ll_user_action"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -16,21 +15,42 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent">
-                <Button
-                    android:id="@+id/btn_user_action_1"
-                    android:text="Deny"
-                    android:layout_width="68dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="2dp">
-                </Button>
-
-                <Button
-                    android:id="@+id/btn_user_action_2"
-                    android:text="Accept"
-                    android:layout_width="68dp"
-                    android:layout_height="40dp"
-                    android:layout_margin="2dp">
-                </Button>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_action_1"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_margin="5dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="50dp"
+                    app:icon="@drawable/ic_delete"
+                    app:iconTint="@color/red"
+                    app:strokeColor="@color/red"
+                    app:strokeWidth="2dp"
+                    android:backgroundTint="@color/colorWhite"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="20dp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_action_2"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_margin="5dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:cornerRadius="50dp"
+                    app:icon="@drawable/ic_add_friend"
+                    app:iconTint="@color/colorWhite"
+                    app:strokeColor="@color/colorPrimary"
+                    app:strokeWidth="2dp"
+                    android:backgroundTint="@color/colorPrimary"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="20dp" />
             </LinearLayout>
 
             <com.google.android.material.imageview.ShapeableImageView
@@ -67,7 +87,7 @@
                 tools:text="Minh Dan" />
 
             <TextView
-                android:id="@+id/tv_user_last_message"
+                android:id="@+id/tv_user_status"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="4dp"
@@ -75,7 +95,6 @@
                 android:fontFamily="@font/sf_pro_display_regular"
                 android:maxLines="1"
                 app:layout_constrainedWidth="true"
-                android:text="Các bạn chưa là bạn"
                 app:layout_constraintBottom_toBottomOf="@+id/image_profile"
                 app:layout_constraintEnd_toStartOf="@+id/tv_user_last_message_date"
                 app:layout_constraintHorizontal_bias="0.0"

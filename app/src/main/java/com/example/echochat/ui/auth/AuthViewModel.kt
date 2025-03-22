@@ -10,16 +10,19 @@ import com.example.echochat.model.LoginDTO
 import com.example.echochat.model.RegisterDTO
 import com.example.echochat.model.ResLoginDTO
 import com.example.echochat.model.User
+import com.example.echochat.model.UserDeviceToken
 import com.example.echochat.network.api.ApiClient
 import com.example.echochat.repository.AuthRepository
 import com.example.echochat.repository.SharedPreferencesReManager
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.TOKEN_KEY
+import com.example.echochat.util.TOKEN_USER_DEVICE
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import java.time.LocalDateTime
 
 class AuthViewModel: ViewModel() {
     private val repository: AuthRepository = AuthRepository(ApiClient.apiService)
@@ -93,6 +96,16 @@ class AuthViewModel: ViewModel() {
                         _login.value = UiState.Success(resResponse.data)
                         SharedPreferencesReManager.saveData(TOKEN_KEY, resResponse.data.token)
                         SharedPreferencesReManager.saveData(USER_SESSION, resResponse.data.user)
+                        Log.i("MYTAG", resResponse.data.user.toString())
+                        try {
+                            val temp = repository.createUserDeviceToken(UserDeviceToken(
+                                token = TOKEN_USER_DEVICE,
+                                user = resResponse.data.user,
+                                timeStamp = LocalDateTime.now().toString()
+                            ))
+                        } catch (ex: Exception) {
+                            Log.i("MYTAG", ex.message.toString())
+                        }
                         MY_USER_ID = resResponse.data.user.id!!
                     }
                     401 -> {

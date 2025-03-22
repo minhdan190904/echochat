@@ -9,8 +9,7 @@
         android:id="@+id/conversationFragment"
         android:name="com.example.echochat.ui.conversations.ConversationFragment"
         tools:layout="@layout/fragment_conversation"
-        android:label="ConversationFragment">
-    </fragment>
+        android:label="ConversationFragment"/>
 
     <fragment
         android:id="@+id/friendsFragment"

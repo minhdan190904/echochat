@@ -1,10 +1,12 @@
 package com.example.echochat.model
-
 import com.example.echochat.util.MY_USER_ID
 
-class Chat(val user1: User, val user2: User, var id: Int? = null) {
-    val messageList = mutableListOf<Message>()
-
+data class Chat(
+    val user1: User,
+    val user2: User,
+    var id: Int? = null,
+    val messageList: MutableList<Message> = mutableListOf()
+) {
     fun addMessage(message: Message) {
         messageList.add(message)
     }
@@ -18,8 +20,6 @@ class Chat(val user1: User, val user2: User, var id: Int? = null) {
     fun getChatImage(currentUser: User): String? {
         return if (currentUser.id == user1.id) user2.profileImageUrl else user1.profileImageUrl
     }
-
-    fun getMessages(): List<Message> = messageList
 
     fun getOtherUser(currentUser: User): User {
         return if (currentUser.id == user1.id) user2 else user1

@@ -16,9 +16,9 @@ class UsersFragment : Fragment() {
 
     private lateinit var binding: FragmentUsersBinding
     private val viewModel: FriendsViewModel by activityViewModels()
-    private val gson = Gson()
     private lateinit var usersListAdapter: FriendRequestListAdapter
     private lateinit var webSocket: WebSocket
+    private val gson = Gson()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +42,7 @@ class UsersFragment : Fragment() {
     }
 
     private fun initAdapters() {
-        usersListAdapter = FriendRequestListAdapter()
+        usersListAdapter = FriendRequestListAdapter(viewModel)
     }
 
     private fun initView() {
@@ -61,7 +61,23 @@ class UsersFragment : Fragment() {
         }
 
         viewModel.usersUiState.observe(viewLifecycleOwner) { state ->
-            binding.progressBar.visibility = if (state is UiState.Loading) View.VISIBLE else View.GONE
+            when (state) {
+                is UiState.Loading -> {
+                    binding.tvNoData.visibility = View.GONE
+                    binding.swipeRefreshLayout.isRefreshing = true
+                }
+                is UiState.NoData -> {
+                    binding.tvNoData.visibility = View.VISIBLE
+                    binding.swipeRefreshLayout.isRefreshing = false
+                }
+                is UiState.HasData -> {
+                    binding.tvNoData.visibility = View.GONE
+                    binding.swipeRefreshLayout.isRefreshing = false
+                }
+
+                is UiState.Failure -> TODO()
+                is UiState.Success -> TODO()
+            }
         }
     }
 

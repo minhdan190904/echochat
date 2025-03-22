@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Echo Chat</string>
+    <string name="toolbar_conversations">Cuộc trò chuyện</string>
+    <string name="hint_search">Tìm kiếm bạn bè</string>
+    <string name="hint_type_message">Nhập tin nhắn...</string>
+    <string name="text_active_now">Đang hoạt động</string>
+    <string name="last_seen_time">Hoạt động lần cuối: %s</string>
+    <string name="last_message_other">%s: %s</string>
+    <string name="last_message_me">Bạn: %s</string>
+    <string name="last_message_me_image">Bạn: Đã gửi một ảnh.</string>
+    <string name="last_message_other_image">%s: Đã gửi một ảnh.</string>
+    <!-- TODO: Xóa hoặc thay đổi văn bản mẫu này -->
+    <string name="hello_blank_fragment">Xin chào, fragment trống</string>
+</resources>

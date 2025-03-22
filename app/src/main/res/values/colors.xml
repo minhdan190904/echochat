@@ -15,4 +15,5 @@
     <color name="md_theme_dark_primary">#D0BCFF</color>
     <color name="gray">#808080</color>
     <color name="colorPrimary">#FF00C9A7</color>
+    <color name="red">#FF0000</color>
 </resources>

@@ -25,6 +25,9 @@ class LoginFragment : Fragment() {
         super.onStart()
         viewModel.getSession { user ->
             findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+
+            toast(user?.profileImageUrl ?: "Welcome")
+            Log.i("MYTAG", user?.profileImageUrl ?: "Welcome")
 //            binding.apply {
 //                etEmailLogin.setText(loginDTO?.username)
 //                etPasswordLogin.setText(loginDTO?.password)

@@ -1,13 +1,13 @@
 package com.example.echochat.network.api
 
 import com.example.echochat.repository.SharedPreferencesReManager
+import com.example.echochat.util.BASE_DOMAIN
 import com.example.echochat.util.TOKEN_KEY
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.jackson.JacksonConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiClient {
@@ -33,13 +33,14 @@ object ApiClient {
 
     val apiService: ApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("https://f74a-2001-ee0-1a44-9f5e-cd8-7079-ba89-b341.ngrok-free.app/")
+            .baseUrl("https://${BASE_DOMAIN}/")
             .client(httpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(ApiService::class.java)
     }
 
-    val request: Request = Request.Builder().url("ws://f74a-2001-ee0-1a44-9f5e-cd8-7079-ba89-b341.ngrok-free.app/chat").build()
+    val request_chat: Request = Request.Builder().url("wss://${BASE_DOMAIN}/chat").build()
+    val request_request: Request = Request.Builder().url("wss://${BASE_DOMAIN}/request").build()
 
 }

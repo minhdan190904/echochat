@@ -28,3 +28,28 @@ data class FriendRequestDTO(
     var receiver: User = User(),
     var requestStatus: RequestStatus = RequestStatus.REJECTED
 )
+
+data class ResUpLoadFileDTO(
+    val pathToFile: String,
+    val timestamp: String
+)
+
+data class NotificationRequest(
+    val title: String,
+    val body: String,
+    val topic: String,
+    val token: String,
+    val imageUrl: String
+)
+
+data class UserDeviceToken(
+    val token: String,
+    val id: Int? = null,
+    val timeStamp: String? = null,
+    val user: User? = null
+)
+
+data class NotificationResponse(
+    val status: Int,
+    val message: String
+)
