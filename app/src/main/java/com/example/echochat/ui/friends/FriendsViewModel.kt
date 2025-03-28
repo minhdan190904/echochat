@@ -6,12 +6,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.echochat.model.FriendRequest
-import com.example.echochat.model.FriendRequestDTO
+import com.example.echochat.model.dto.FriendRequestDTO
+import com.example.echochat.model.dto.NotificationRequest
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient
 import com.example.echochat.network.api.ApiClient.httpClient
 import com.example.echochat.network.api.ApiClient.request_request
-import com.example.echochat.repository.UserRepository
+import com.example.echochat.repository.ChatRepository
+import com.example.echochat.repository.FriendRequestRepository
+import com.example.echochat.repository.NotificationRepository
+import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.UiState
 import com.google.gson.Gson
@@ -20,8 +23,11 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-class FriendsViewModel: ViewModel() {
-    private var userRepository: UserRepository = UserRepository(ApiClient.apiService)
+class FriendsViewModel(
+    private val friendRequestRepository: FriendRequestRepository = FriendRequestRepository(),
+    private val notificationRepository: NotificationRepository = NotificationRepository(),
+    private val chatRepository: ChatRepository = ChatRepository()
+): ViewModel() {
 
     private val _usersList = MutableLiveData<List<FriendRequestDTO>>()
     val userList: LiveData<List<FriendRequestDTO>> = _usersList
@@ -42,6 +48,15 @@ class FriendsViewModel: ViewModel() {
 
     private val _usersListSend = MutableLiveData<List<FriendRequestDTO>>()
     val userListSend: LiveData<List<FriendRequestDTO>> = _usersListSend
+
+    private val _friendRequestDTO = MutableLiveData<FriendRequestDTO?>()
+    val friendRequestDTO: LiveData<FriendRequestDTO?> = _friendRequestDTO
+
+    private val _chatId = MutableLiveData<Int>()
+    val chatId: LiveData<Int> = _chatId
+
+    private val _chatUiState = MutableLiveData<UiState<Nothing>>()
+    val chatUiState: LiveData<UiState<Nothing>> = _chatUiState
 
     private val gson = Gson()
     private lateinit var webSocket: WebSocket
@@ -79,15 +94,15 @@ class FriendsViewModel: ViewModel() {
             _usersUiState.value = UiState.Loading
             _usersReceiveUiState.value = UiState.Loading
             _usersSendUiState.value = UiState.Loading
-            val response = userRepository.getUserRequests(searchQuery.value)
+            val response = friendRequestRepository.getUserRequests(searchQuery.value)
             when (response) {
                 is NetworkResource.Success -> {
                     _usersList.value = response.data
                     _usersListReceive.value = response.data.filter {
-                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.receiver.id == userRepository.myUser?.id
+                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.receiver.id == friendRequestRepository.myUser?.id
                     }
                     _usersListSend.value = response.data.filter {
-                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.sender.id == userRepository.myUser?.id
+                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.sender.id ==  friendRequestRepository.myUser?.id
                     }
                 }
                 is NetworkResource.Error -> {
@@ -120,7 +135,7 @@ class FriendsViewModel: ViewModel() {
     fun updateFriendRequest(friendRequestDTO: FriendRequestDTO) {
         friendRequestDTO.let {
             viewModelScope.launch {
-                val response = userRepository.sentFriendRequest(friendRequestDTO)
+                val response = friendRequestRepository.sentFriendRequest(friendRequestDTO)
                 when (response) {
                     is NetworkResource.Success -> {
                         val message = friendRequestDTO.receiver.id.toString() + "-" + friendRequestDTO.sender.id.toString() + "-" + friendRequestDTO.requestStatus
@@ -136,5 +151,52 @@ class FriendsViewModel: ViewModel() {
                 }
             }
         }
+    }
+
+    fun sendNotification(friend: FriendRequestDTO) {
+        viewModelScope.launch {
+            val response2 = notificationRepository.sendMessageNotification(
+                receiverId = friend.receiver.id!!,
+                notificationRequest = NotificationRequest(
+                    title = friend.sender.name,
+                    body = friend.sender.name + " đã gửi lời mời kết bạn",
+                    topic = "",
+                    token = "",
+                    imageUrl = ""
+                )
+            )
+        }
+    }
+
+    fun getChatId(user1Id: Int, user2Id: Int) {
+        viewModelScope.launch {
+            _chatUiState.value = UiState.Loading
+            val response = chatRepository.fetchChatIdByUserIds(user1Id, user2Id)
+            when (response) {
+                is NetworkResource.Success -> {
+                    _chatId.value = response.data
+                    _chatUiState.value = UiState.HasData
+                    CHAT_ID = response.data
+                }
+
+                is NetworkResource.NetworkException -> {
+                    _chatUiState.value = UiState.Failure(response.message)
+                    CHAT_ID = -1
+                }
+
+                is NetworkResource.Error -> {
+                    _chatUiState.value = UiState.Failure(response.message)
+                    CHAT_ID = -1
+                }
+            }
+        }
+    }
+
+    fun openFriendProfile(friend: FriendRequestDTO) {
+        _friendRequestDTO.value = friend
+    }
+
+    fun clearFriendProfile() {
+        _friendRequestDTO.value = null
     }
 }

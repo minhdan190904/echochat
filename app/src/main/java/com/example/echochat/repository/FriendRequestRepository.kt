@@ -1,28 +1,30 @@
-package com.example.echochat.repository
+package com.example.echochat.repository;
 
 import com.example.echochat.model.User
+import com.example.echochat.model.dto.FriendRequestDTO
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient.userApi
+import com.example.echochat.network.api.ApiClient.friendRequestApi
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.USER_SESSION
+import com.example.echochat.util.getFriend
 import retrofit2.HttpException
 import java.io.IOException
 
-class UserRepository {
+class FriendRequestRepository {
+
     var myUser: User? = null
 
     init {
         myUser = SharedPreferencesReManager.getData(USER_SESSION, User::class.java)
     }
-
-    suspend fun fetchUserById(id: Int): NetworkResource<User> {
+    
+    suspend fun sentFriendRequest(friendRequestDTO: FriendRequestDTO): NetworkResource<FriendRequestDTO> {
         return try {
-            val userApi = userApi.fetchUserById(id)
-            NetworkResource.Success(userApi.data)
+            val friendRequestApi = friendRequestApi.sendFriendRequest(friendRequestDTO)
+            NetworkResource.Success(friendRequestApi.data)
         } catch (ex: HttpException) {
             NetworkResource.Error(
                 message = when (ex.code()) {
-                    409 -> "Email already exists"
                     500 -> "Internal Server Error. Please try again later."
                     else -> "Server error: ${ex.message()}"
                 }, responseCode = ex.code()
@@ -34,19 +36,21 @@ class UserRepository {
         }
     }
 
-    suspend fun updateUser(user: User): NetworkResource<User> {
+    suspend fun getUserRequests(query: String?): NetworkResource<List<FriendRequestDTO>> {
         return try {
-            val userApi = userApi.updateUser(user)
-            SharedPreferencesReManager.saveData(USER_SESSION, userApi.data)
-            myUser = userApi.data
-            NetworkResource.Success(userApi.data)
+            val friendRequestListApi = friendRequestApi.getFriendRequests(myUser?.id!!)
+            if (query.isNullOrEmpty()) {
+                NetworkResource.Success(friendRequestListApi.data)
+            } else {
+                NetworkResource.Success(friendRequestListApi.data.filter {
+                    it.getFriend().name.contains(query, true)
+                })
+            }
         } catch (ex: HttpException) {
             NetworkResource.Error(
                 message = when (ex.code()) {
-                    409 -> "Email already exists"
                     500 -> "Internal Server Error. Please try again later."
-                    400 ->  ex.message
-                    else -> "Server error: ${ex.code()}"
+                    else -> "Server error: ${ex.message()}"
                 }, responseCode = ex.code()
             )
         } catch (ex: IOException) {
@@ -55,6 +59,5 @@ class UserRepository {
             NetworkResource.Error(ex.message ?: "Unexpected error")
         }
     }
-
 
 }

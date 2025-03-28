@@ -3,12 +3,14 @@ package com.example.echochat
 import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.echochat.util.TOKEN_USER_DEVICE
 import com.google.firebase.messaging.FirebaseMessaging
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         setContentView(R.layout.activity_main)
         FirebaseMessaging.getInstance().token
             .addOnCompleteListener { task ->

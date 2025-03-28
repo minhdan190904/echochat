@@ -8,23 +8,24 @@ import androidx.lifecycle.viewModelScope
 import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
-import com.example.echochat.model.NotificationRequest
+import com.example.echochat.model.dto.NotificationRequest
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient
+import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FileRepository
+import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.repository.UserRepository
-import com.example.echochat.util.BASE_URL_GET_IMAGE
 import com.example.echochat.util.generateTime
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
-import java.time.LocalDateTime
 
 
-class ChatViewModel (
-    private val userRepository: UserRepository = UserRepository(ApiClient.apiService)
-) : ViewModel() {
+class ChatViewModel(
+    private val userRepository: UserRepository = UserRepository(),
+    private val chatRepository: ChatRepository = ChatRepository(),
+    private val fileRepository: FileRepository = FileRepository(),
+    private val notificationRepository: NotificationRepository = NotificationRepository()
+): ViewModel() {
 
-    private val fileRepository = FileRepository(ApiClient.apiService)
     private var chatId: Int? = null
     private val _chat = MutableLiveData<Chat>()
     val chat: LiveData<Chat> = _chat
@@ -32,7 +33,6 @@ class ChatViewModel (
     private val _chatUiState = MutableLiveData<UiState<Nothing>>()
     val chatUiState: LiveData<UiState<Nothing>> = _chatUiState
 
-    //Represents user's message
     val messageText = MutableLiveData("")
 
     private val _messageData = MutableLiveData<Message>()
@@ -49,7 +49,7 @@ class ChatViewModel (
         this.chatId = chatId
         viewModelScope.launch {
             _chatUiState.value = UiState.Loading
-            val response = userRepository.getChatById(chatId)
+            val response = chatRepository.getChatById(chatId)
             when (response) {
                 is NetworkResource.Success -> {
                     _chat.value = response.data
@@ -65,7 +65,7 @@ class ChatViewModel (
 
     fun updateUserOnlineStatus(isOnline: Boolean) {
         viewModelScope.launch {
-            val user = userRepository.myUser!!
+            val user = chatRepository.myUser!!
             user.isOnline = isOnline
             Log.i("MYTAG", user.toString())
             val response = userRepository.updateUser(user)
@@ -117,7 +117,7 @@ class ChatViewModel (
     fun sendTextMessage() {
         messageText.value?.let { msg ->
             val message = Message(
-                sender = userRepository.myUser,
+                sender = chatRepository.myUser,
                 message = msg,
                 messageType = Message.MessageType.TEXT,
                 sendingTime = generateTime(),
@@ -132,7 +132,7 @@ class ChatViewModel (
 
             chatId?.let {
                 viewModelScope.launch {
-                    val response = userRepository.sendMessage(it, message)
+                    val response = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
 //                            _chat.value = response.data
@@ -151,7 +151,7 @@ class ChatViewModel (
     fun sendVideoMessage() {
         videoUrl.value?.let { msg ->
             val message = Message(
-                sender = userRepository.myUser,
+                sender = chatRepository.myUser,
                 message = msg,
                 messageType = Message.MessageType.VIDEO,
                 sendingTime = generateTime(),
@@ -163,7 +163,7 @@ class ChatViewModel (
             chatId?.let {
                 viewModelScope.launch {
                     Log.i("MYTAG", "Message: $message")
-                    val response = userRepository.sendMessage(it, message)
+                    val response = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
 //                            _chat.value = response.data  // Cập nhật lại từ API nếu cần
@@ -181,7 +181,7 @@ class ChatViewModel (
     fun sendImageMessage() {
         imageUrl.value?.let { msg ->
             val message = Message(
-                sender = userRepository.myUser,
+                sender = chatRepository.myUser,
                 message = msg,
                 messageType = Message.MessageType.IMAGE,
                 sendingTime = generateTime(),
@@ -194,7 +194,7 @@ class ChatViewModel (
             chatId?.let {
                 viewModelScope.launch {
                     Log.i("MYTAG", "Message: $message")
-                    val response = userRepository.sendMessage(it, message)
+                    val response = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
                             sendNotification(response.data!!, message, msg)
@@ -215,8 +215,8 @@ class ChatViewModel (
         } else if(message.messageType == Message.MessageType.VIDEO){
             message.message = "Đã gửi 1 video"
         }
-        val response2 = userRepository.sendMessageNotification(
-            receiverId = chat.getOtherUser(userRepository.myUser!!).id!!,
+        val response2 = notificationRepository.sendMessageNotification(
+            receiverId = chat.getOtherUser(chatRepository.myUser!!).id!!,
             notificationRequest = NotificationRequest(
                 title = message.sender!!.name,
                 body = message.message,

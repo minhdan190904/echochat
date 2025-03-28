@@ -16,32 +16,9 @@ import com.example.echochat.repository.FileRepository
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 
-class SettingViewModel: ViewModel() {
-    private val fileRepository = FileRepository(ApiClient.apiService)
-
-    private val _imageUrl: MutableLiveData<String> = MutableLiveData<String>()
-    val imageUrl: LiveData<String> = _imageUrl
-
-    fun uploadAvatarImage(file: MultipartBody.Part){
-        viewModelScope.launch {
-            val response = fileRepository.uploadFile(file, "avatar")
-            when (response) {
-                is NetworkResource.Success -> {
-                    _imageUrl.value = response.data.pathToFile
-                }
-                is NetworkResource.Error -> {
-                    response.message?.let { Log.i("ErrorFile", it) }
-                }
-                is NetworkResource.NetworkException ->{
-                    response.message?.let { Log.i("ErrorFile", it) }
-                }
-
-                else -> {
-                    Log.i("ErrorFile", "Error")
-                }
-            }
-        }
-    }
+class SettingViewModel(
+    private val fileRepository: FileRepository = FileRepository()
+): ViewModel() {
 
     fun openAppNotificationSettings(context: Context) {
         val intent = Intent().apply {

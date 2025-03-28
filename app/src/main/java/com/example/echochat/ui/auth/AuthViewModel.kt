@@ -1,19 +1,17 @@
 package com.example.echochat.ui.auth
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.echochat.model.LoginDTO
-import com.example.echochat.model.RegisterDTO
-import com.example.echochat.model.ResLoginDTO
 import com.example.echochat.model.User
-import com.example.echochat.model.UserDeviceToken
-import com.example.echochat.network.api.ApiClient
+import com.example.echochat.model.dto.LoginDTO
+import com.example.echochat.model.dto.RegisterDTO
+import com.example.echochat.model.dto.ResLoginDTO
+import com.example.echochat.model.dto.UserDeviceToken
 import com.example.echochat.repository.AuthRepository
-import com.example.echochat.repository.SharedPreferencesReManager
+import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.TOKEN_KEY
 import com.example.echochat.util.TOKEN_USER_DEVICE
@@ -24,8 +22,9 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDateTime
 
-class AuthViewModel: ViewModel() {
-    private val repository: AuthRepository = AuthRepository(ApiClient.apiService)
+class AuthViewModel(
+    private val repository: AuthRepository = AuthRepository()
+): ViewModel() {
     private val _register = MutableLiveData<UiState<User>>()
     val register: LiveData<UiState<User>> = _register
 
@@ -101,8 +100,8 @@ class AuthViewModel: ViewModel() {
                             val temp = repository.createUserDeviceToken(UserDeviceToken(
                                 token = TOKEN_USER_DEVICE,
                                 user = resResponse.data.user,
-                                timeStamp = LocalDateTime.now().toString()
-                            ))
+                                timeStamp = LocalDateTime.now().toString())
+                            )
                         } catch (ex: Exception) {
                             Log.i("MYTAG", ex.message.toString())
                         }

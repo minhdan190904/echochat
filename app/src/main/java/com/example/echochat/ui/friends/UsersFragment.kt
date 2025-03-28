@@ -7,8 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.findNavController
+import androidx.navigation.navOptions
+import com.example.echochat.R
 import com.example.echochat.databinding.FragmentUsersBinding
+import com.example.echochat.model.FriendRequest
+import com.example.echochat.ui.home.HomeFragmentDirections
 import com.example.echochat.util.UiState
+import com.example.echochat.util.getFriend
+import com.example.echochat.util.toast
 import com.google.gson.Gson
 import okhttp3.WebSocket
 
@@ -52,6 +59,7 @@ class UsersFragment : Fragment() {
     }
 
     private fun observeValues() {
+
         viewModel.userList.observe(viewLifecycleOwner) { users ->
             usersListAdapter.submitGroupedList(users)
         }
@@ -66,10 +74,12 @@ class UsersFragment : Fragment() {
                     binding.tvNoData.visibility = View.GONE
                     binding.swipeRefreshLayout.isRefreshing = true
                 }
+
                 is UiState.NoData -> {
                     binding.tvNoData.visibility = View.VISIBLE
                     binding.swipeRefreshLayout.isRefreshing = false
                 }
+
                 is UiState.HasData -> {
                     binding.tvNoData.visibility = View.GONE
                     binding.swipeRefreshLayout.isRefreshing = false

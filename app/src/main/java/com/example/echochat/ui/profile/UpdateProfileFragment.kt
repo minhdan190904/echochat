@@ -1,6 +1,7 @@
 package com.example.echochat.ui.profile
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -26,6 +27,7 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -34,7 +36,7 @@ class UpdateProfileFragment : Fragment() {
     private lateinit var binding: FragmentUpdateProfileBinding
     private lateinit var dialog: BottomSheetDialog
     private var imageUri: Uri? = null
-    private val viewModel: ProfileViewModel by viewModels()
+    private val viewModel: UpdateProfileViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +59,25 @@ class UpdateProfileFragment : Fragment() {
             showBottomSheet()
         }
 
+        binding.etBirthday.setOnClickListener {
+            showDatePicker()
+        }
+
         observeValues()
+    }
+
+    private fun showDatePicker() {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePicker = DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
+            val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
+            binding.etBirthday.setText(selectedDate)
+        }, year, month, day)
+
+        datePicker.show()
     }
 
     private fun observeValues() {

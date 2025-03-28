@@ -2,7 +2,7 @@
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/auth_navigation"
+    android:id="@+id/main_navigation"
     app:startDestination="@id/loginFragment">
 
     <fragment
@@ -39,6 +39,9 @@
         <action
             android:id="@+id/action_homeFragment_to_friendProfileFragment"
             app:destination="@id/friendProfileFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
     </fragment>
 
     <fragment
@@ -50,6 +53,11 @@
         android:id="@+id/friendProfileFragment"
         android:name="com.example.echochat.ui.profile.FriendProfileFragment"
         android:label="fragment_friend_profile"
-        tools:layout="@layout/fragment_friend_profile" />
+        tools:layout="@layout/fragment_friend_profile" >
+        <argument
+            android:name="friendId"
+            app:argType="integer"
+            android:defaultValue="0"/>
+    </fragment>
 
 </navigation>

@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentLoginBinding
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.UiState
 import com.example.echochat.util.hide
 import com.example.echochat.util.show
@@ -21,10 +21,25 @@ class LoginFragment : Fragment() {
     private lateinit var binding: FragmentLoginBinding
     private val viewModel: AuthViewModel by viewModels()
 
-    override fun onStart() {
-        super.onStart()
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         viewModel.getSession { user ->
-            findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+            findNavController().navigate(
+                R.id.action_loginFragment_to_homeFragment,
+                null,
+                NavOptions.Builder()
+                    .setPopUpTo(R.id.main_navigation, true)
+                    .build()
+            )
 
             toast(user?.profileImageUrl ?: "Welcome")
             Log.i("MYTAG", user?.profileImageUrl ?: "Welcome")
@@ -39,18 +54,6 @@ class LoginFragment : Fragment() {
 //                }
 //            }
         }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentLoginBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         
         binding.btnSignUp.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
@@ -89,7 +92,14 @@ class LoginFragment : Fragment() {
                     binding.btnConfirmSignIn.setText("Login")
                     binding.progressBarLoadNotification.hide()
                     toast(state.data.toString())
-                    findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+                    findNavController().navigate(
+                        R.id.action_loginFragment_to_homeFragment,
+                        null,
+                        NavOptions.Builder()
+                            .setPopUpTo(R.id.main_navigation, true)
+//                            .setPopUpTo(R.id.registerFragment, true)
+                            .build()
+                    )
                 }
 
                 UiState.HasData -> TODO()

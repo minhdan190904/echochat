@@ -21,13 +21,13 @@ import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentChatBinding
 import com.example.echochat.model.Message
-import com.example.echochat.model.MessageDTO
 import com.example.echochat.model.User
-import com.example.echochat.network.api.ApiClient
+import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.api.ApiClient.httpClient
 import com.example.echochat.network.api.ApiClient.request_chat
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
+import com.example.echochat.util.customLastSeenChat
 import com.example.echochat.util.toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
@@ -83,9 +83,6 @@ class ChatFragment : Fragment() {
     private fun connectWebSocket() {
         webSocket = httpClient.newWebSocket(request_chat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
-                lifecycleScope.launch {
-                    viewModel.updateUserOnlineStatus(true)
-                }
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -279,6 +276,7 @@ class ChatFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         viewModel.updateUserOnlineStatus(false)
+        Log.i("MYTAG", "Fragment destroyed")
         webSocket.close(1000, "Fragment destroyed")
     }
 
@@ -292,8 +290,9 @@ class ChatFragment : Fragment() {
     private fun initToolbar(receiver: User) {
         binding.toolbar.tvUserLastSeen.isVisible = true
         val lastSeenTime = receiver.lastSeen
+        Log.i("MYTAG", "Last seen: $lastSeenTime")
         binding.toolbar.tvUserLastSeen.text =
             if (receiver.isOnline) getString(R.string.text_active_now)
-            else getString(R.string.last_seen_time, lastSeenTime)
+            else getString(R.string.last_seen_time, lastSeenTime?.customLastSeenChat())
     }
 }

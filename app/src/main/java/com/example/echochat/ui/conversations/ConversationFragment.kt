@@ -10,7 +10,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.echochat.databinding.FragmentConversationBinding
-import com.example.echochat.model.MessageDTO
+import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.api.ApiClient.httpClient
 import com.example.echochat.network.api.ApiClient.request_chat
 import com.example.echochat.ui.chat.ChatActivity
@@ -52,7 +52,11 @@ class ConversationFragment : Fragment() {
         observeValues()
         setClicks()
         connectWebSocket()
+    }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        webSocket.close(1000, "Fragment destroyed")
     }
 
     private fun connectWebSocket() {
@@ -72,7 +76,6 @@ class ConversationFragment : Fragment() {
                     }
                 }
             }
-
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 lifecycleScope.launch {

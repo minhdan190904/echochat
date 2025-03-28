@@ -1,9 +1,7 @@
-package com.example.echochat.repository
+package com.example.echochat.util
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.example.echochat.util.LOCAL_SHARED_PREF
-import com.example.echochat.util.TOKEN_KEY
 import com.google.gson.Gson
 
 object  SharedPreferencesReManager {

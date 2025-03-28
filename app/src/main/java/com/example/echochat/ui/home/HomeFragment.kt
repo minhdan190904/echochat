@@ -1,21 +1,39 @@
 package com.example.echochat.ui.home
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentHomeBinding
-import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.example.echochat.network.api.ApiClient.httpClient
+import com.example.echochat.network.api.ApiClient.request_status
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
+    private lateinit var webSocket: WebSocket
+
+    override fun onStart() {
+        super.onStart()
+        connectWebSocketStatus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        connectWebSocketStatus()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -25,10 +43,51 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val navHostFragment = childFragmentManager.findFragmentById(R.id.nav_host_fragment_main) as NavHostFragment
+        val navHostFragment =
+            childFragmentManager.findFragmentById(R.id.nav_host_fragment_main) as NavHostFragment
         val navController = navHostFragment.navController
         binding.bottomNavHome.setupWithNavController(navController)
+        getPermission()
+    }
+
+    private fun connectWebSocketStatus() {
+        webSocket = httpClient.newWebSocket(request_status, object : WebSocketListener() {})
+    }
+
+    private fun getPermission() {
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS), 999
+            )
+        }
+
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.INTERNET) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.INTERNET), 999
+            )
+        }
+
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_NETWORK_STATE) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_NETWORK_STATE), 999
+            )
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        webSocket.close(1000, "Fragment destroyed")
     }
 }

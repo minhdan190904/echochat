@@ -11,8 +11,7 @@ import com.example.echochat.R
 import com.example.echochat.databinding.ItemHeaderBinding
 import com.example.echochat.databinding.ItemUserBinding
 import com.example.echochat.model.FriendRequest
-import com.example.echochat.model.FriendRequestDTO
-import com.example.echochat.ui.conversations.ConversationViewModel
+import com.example.echochat.model.dto.FriendRequestDTO
 import com.example.echochat.util.BindingUtils.setImageUrl
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.VIEW_TYPE_HEADER
@@ -86,6 +85,11 @@ class FriendRequestListAdapter(
                 viewModel?.updateFriendRequest(friendRequestDTOUpdate)
             }
 
+            bind.imageProfile.setOnClickListener {
+                viewModel?.openFriendProfile(friendRequest)
+                viewModel?.getChatId(MY_USER_ID, friendRequest.getFriend().id!!)
+            }
+
             bind.btnAction2.setOnClickListener {
                 val friendRequestDTOUpdate = friendRequest.copy().apply {
                     requestStatus = when (friendRequest.requestStatus) {
@@ -101,6 +105,9 @@ class FriendRequestListAdapter(
                     }
                 }
                 viewModel?.updateFriendRequest(friendRequestDTOUpdate)
+                if(friendRequestDTOUpdate.requestStatus == FriendRequest.RequestStatus.PENDING){
+                    viewModel?.sendNotification(friendRequestDTOUpdate)
+                }
             }
 
             when(friendRequest.requestStatus){

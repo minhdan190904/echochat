@@ -8,12 +8,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
 import com.example.echochat.model.FriendRequest
-import com.example.echochat.model.MessageDTO
 import com.example.echochat.model.User
+import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkResource
 import com.example.echochat.network.api.ApiClient
 import com.example.echochat.network.api.ApiClient.httpClient
 import com.example.echochat.network.api.ApiClient.request_request
+import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.UserRepository
 import com.example.echochat.util.MY_USER_ID
 import com.google.gson.Gson
@@ -22,9 +23,9 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-class ConversationViewModel: ViewModel() {
-
-    private var userRepository: UserRepository = UserRepository(ApiClient.apiService)
+class ConversationViewModel(
+    private val chatRepository: ChatRepository = ChatRepository(),
+): ViewModel() {
 
     private val _chatList = MutableLiveData<List<Chat>>()
     val chatList: LiveData<List<Chat>> = _chatList
@@ -73,11 +74,11 @@ class ConversationViewModel: ViewModel() {
         viewModelScope.launch {
             _chatUiState.value = UiState.Loading
             _friendsUiState.value = UiState.Loading
-            val response = userRepository.getMyConversations(searchQuery.value)
+            val response = chatRepository.getMyConversations(searchQuery.value)
             when (response) {
                 is NetworkResource.Success -> {
                     _chatList.value = response.data.sortedBy { it.getLastMessage()?.id }.reversed()
-                    _friendsList.value = response.data.mapNotNull { userRepository.myUser?.let { it1 ->
+                    _friendsList.value = response.data.mapNotNull { chatRepository.myUser?.let { it1 ->
                         it.getOtherUser(
                             it1
                         )

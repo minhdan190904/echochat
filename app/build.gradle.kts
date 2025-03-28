@@ -1,3 +1,4 @@
+// build.gradle (Module: app)
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -56,30 +57,31 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    //firebase
+    implementation( "androidx.core:core-splashscreen:1.0.1" )
+
+    // ✅ Firebase
     implementation("com.google.firebase:firebase-analytics")
     implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
 
+    // ✅ Retrofit & OkHttp
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
-    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
-
+    implementation("com.squareup.okhttp3:okhttp:4.9.3")
 
     // ✅ Dagger Hilt
-    implementation("com.google.dagger:hilt-android:2.51")
-    kapt("com.google.dagger:hilt-android-compiler:2.51")
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-android-compiler:2.50")
 
-
-    // ✅ Hilt ViewModel (bản mới thay thế bản cũ)
+    // ✅ Hilt ViewModel
     implementation("androidx.hilt:hilt-navigation-fragment:1.2.0")
     kapt("androidx.hilt:hilt-compiler:1.2.0")
 
-    // ✅ ViewModel + LiveData (cập nhật mới nhất)
+    // ✅ ViewModel + LiveData
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
 
-    // ✅ Animation (Lottie)
+    // ✅ Lottie Animation
     implementation("com.airbnb.android:lottie:6.1.0")
 
     // ✅ JSON Parsing (Gson)

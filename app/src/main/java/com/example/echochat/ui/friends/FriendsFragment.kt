@@ -6,10 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.navigation.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentFriendsBinding
+import com.example.echochat.model.FriendRequest
+import com.example.echochat.ui.home.HomeFragmentDirections
+import com.example.echochat.util.getFriend
+import com.example.echochat.util.toast
 import com.google.android.material.tabs.TabLayout
 
 class FriendsFragment : Fragment() {
@@ -33,6 +37,20 @@ class FriendsFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.viewModel = viewModel
 
+        viewModel.friendRequestDTO.observe(viewLifecycleOwner) { friendRequestDTO ->
+            if(friendRequestDTO != null){
+                if(friendRequestDTO.requestStatus != FriendRequest.RequestStatus.ACCEPTED){
+                    toast("Các bạn chưa là bạn bè")
+                } else {
+                    friendRequestDTO.getFriend().id?.let {
+                        requireActivity().findNavController(R.id.nav_host_fragment_main).navigate(
+                            HomeFragmentDirections.actionHomeFragmentToFriendProfileFragment(it)
+                        )
+                        viewModel.clearFriendProfile()
+                    }
+                }
+            }
+        }
 
         binding.viewPager2.adapter = FragmentPageFriendsAdapter(childFragmentManager, lifecycle)
 

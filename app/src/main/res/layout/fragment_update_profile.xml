@@ -8,7 +8,7 @@
 
         <variable
             name="viewmodel"
-            type="com.example.echochat.ui.profile.ProfileViewModel" />
+            type="com.example.echochat.ui.profile.UpdateProfileViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -185,6 +185,44 @@
                             android:paddingStart="0dp"
                             android:paddingBottom="2dp"
                             android:text="@={viewmodel.email}" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ngày sinh"
+                        android:textColor="@color/gray"
+                        android:textSize="15sp" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:boxBackgroundColor="@color/colorWhite"
+                        app:boxBackgroundMode="filled"
+                        app:endIconDrawable="@drawable/ic_birthday"
+                        app:endIconMode="custom"
+                        app:endIconTint="@color/colorPrimary">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etBirthday"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingStart="0dp"
+                            android:paddingBottom="2dp"
+                            android:focusable="false"
+                            android:cursorVisible="false"
+                            android:clickable="true"
+                            android:text="@={viewmodel.birthday}" />
 
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
