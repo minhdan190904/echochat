@@ -57,3 +57,9 @@ fun Date.customLastSeenChat(): String {
     }
 }
 
+var myUser: User?
+    get() = SharedPreferencesReManager.getData(USER_SESSION, User::class.java)
+    set(value) {
+        SharedPreferencesReManager.saveData(USER_SESSION, value)
+    }
+

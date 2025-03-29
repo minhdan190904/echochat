@@ -11,11 +11,14 @@ import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentLoginBinding
+import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.UiState
 import com.example.echochat.util.hide
 import com.example.echochat.util.show
 import com.example.echochat.util.toast
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
@@ -33,27 +36,19 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.getSession { user ->
-            findNavController().navigate(
-                R.id.action_loginFragment_to_homeFragment,
-                null,
-                NavOptions.Builder()
-                    .setPopUpTo(R.id.main_navigation, true)
-                    .build()
-            )
-
-            toast(user?.profileImageUrl ?: "Welcome")
-            Log.i("MYTAG", user?.profileImageUrl ?: "Welcome")
-//            binding.apply {
-//                etEmailLogin.setText(loginDTO?.username)
-//                etPasswordLogin.setText(loginDTO?.password)
-//                if (validation()) {
-//                    viewModel.login(
-//                        email = etEmailLogin.text.toString(),
-//                        password =  etPasswordLogin.text.toString()
-//                    )
-//                }
-//            }
+            if (user != null) {
+                findNavController().navigate(
+                    R.id.action_loginFragment_to_homeFragment,
+                    null,
+                    NavOptions.Builder()
+                        .setPopUpTo(R.id.main_navigation, true)
+                        .build()
+                )
+            } else {
+                Log.e("SESSION_TAG", "User session is null")
+            }
         }
+
         
         binding.btnSignUp.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)

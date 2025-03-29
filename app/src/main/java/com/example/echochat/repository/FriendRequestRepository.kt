@@ -3,21 +3,21 @@ package com.example.echochat.repository;
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.FriendRequestDTO
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient.friendRequestApi
+import com.example.echochat.network.api.FriendRequestApi
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.getFriend
+import com.example.echochat.util.myUser
 import retrofit2.HttpException
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class FriendRequestRepository {
+@Singleton
+class FriendRequestRepository @Inject constructor(
+    private val friendRequestApi: FriendRequestApi
+){
 
-    var myUser: User? = null
-
-    init {
-        myUser = SharedPreferencesReManager.getData(USER_SESSION, User::class.java)
-    }
-    
     suspend fun sentFriendRequest(friendRequestDTO: FriendRequestDTO): NetworkResource<FriendRequestDTO> {
         return try {
             val friendRequestApi = friendRequestApi.sendFriendRequest(friendRequestDTO)

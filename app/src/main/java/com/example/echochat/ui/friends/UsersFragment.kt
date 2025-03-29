@@ -17,20 +17,15 @@ import com.example.echochat.util.UiState
 import com.example.echochat.util.getFriend
 import com.example.echochat.util.toast
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.WebSocket
 
+@AndroidEntryPoint
 class UsersFragment : Fragment() {
 
     private lateinit var binding: FragmentUsersBinding
     private val viewModel: FriendsViewModel by activityViewModels()
     private lateinit var usersListAdapter: FriendRequestListAdapter
-    private lateinit var webSocket: WebSocket
-    private val gson = Gson()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -64,7 +59,7 @@ class UsersFragment : Fragment() {
             usersListAdapter.submitGroupedList(users)
         }
 
-        viewModel.searchQuery.observe(viewLifecycleOwner) { query ->
+        viewModel.searchQuery.observe(viewLifecycleOwner) {
             viewModel.getMyFriendUser()
         }
 

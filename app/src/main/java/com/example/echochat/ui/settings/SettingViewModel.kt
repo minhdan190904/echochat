@@ -5,20 +5,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient
-import com.example.echochat.repository.FileRepository
-import kotlinx.coroutines.launch
-import okhttp3.MultipartBody
 
-class SettingViewModel(
-    private val fileRepository: FileRepository = FileRepository()
-): ViewModel() {
+class SettingViewModel: ViewModel() {
 
     fun openAppNotificationSettings(context: Context) {
         val intent = Intent().apply {

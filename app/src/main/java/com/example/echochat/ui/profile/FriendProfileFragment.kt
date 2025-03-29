@@ -14,7 +14,9 @@ import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.intentActivity
 import com.example.echochat.util.toast
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class FriendProfileFragment : Fragment() {
 
     private lateinit var binding: FragmentFriendProfileBinding

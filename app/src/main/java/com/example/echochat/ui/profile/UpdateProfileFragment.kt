@@ -22,6 +22,7 @@ import com.example.echochat.util.BindingUtils.setImageUrl
 import com.example.echochat.util.UiState
 import com.example.echochat.util.toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -31,6 +32,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
+@AndroidEntryPoint
 class UpdateProfileFragment : Fragment() {
 
     private lateinit var binding: FragmentUpdateProfileBinding

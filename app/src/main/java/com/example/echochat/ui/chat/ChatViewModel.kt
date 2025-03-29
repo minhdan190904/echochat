@@ -15,15 +15,18 @@ import com.example.echochat.repository.FileRepository
 import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.repository.UserRepository
 import com.example.echochat.util.generateTime
+import com.example.echochat.util.myUser
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
+import javax.inject.Inject
 
-
-class ChatViewModel(
-    private val userRepository: UserRepository = UserRepository(),
-    private val chatRepository: ChatRepository = ChatRepository(),
-    private val fileRepository: FileRepository = FileRepository(),
-    private val notificationRepository: NotificationRepository = NotificationRepository()
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    private val userRepository: UserRepository,
+    private val chatRepository: ChatRepository,
+    private val fileRepository: FileRepository,
+    private val notificationRepository: NotificationRepository
 ): ViewModel() {
 
     private var chatId: Int? = null
@@ -65,7 +68,7 @@ class ChatViewModel(
 
     fun updateUserOnlineStatus(isOnline: Boolean) {
         viewModelScope.launch {
-            val user = chatRepository.myUser!!
+            val user = myUser!!
             user.isOnline = isOnline
             Log.i("MYTAG", user.toString())
             val response = userRepository.updateUser(user)
@@ -117,7 +120,7 @@ class ChatViewModel(
     fun sendTextMessage() {
         messageText.value?.let { msg ->
             val message = Message(
-                sender = chatRepository.myUser,
+                sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.TEXT,
                 sendingTime = generateTime(),
@@ -151,7 +154,7 @@ class ChatViewModel(
     fun sendVideoMessage() {
         videoUrl.value?.let { msg ->
             val message = Message(
-                sender = chatRepository.myUser,
+                sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.VIDEO,
                 sendingTime = generateTime(),
@@ -181,7 +184,7 @@ class ChatViewModel(
     fun sendImageMessage() {
         imageUrl.value?.let { msg ->
             val message = Message(
-                sender = chatRepository.myUser,
+                sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.IMAGE,
                 sendingTime = generateTime(),
@@ -216,7 +219,7 @@ class ChatViewModel(
             message.message = "Đã gửi 1 video"
         }
         val response2 = notificationRepository.sendMessageNotification(
-            receiverId = chat.getOtherUser(chatRepository.myUser!!).id!!,
+            receiverId = chat.getOtherUser(myUser!!).id!!,
             notificationRequest = NotificationRequest(
                 title = message.sender!!.name,
                 body = message.message,

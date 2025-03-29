@@ -10,20 +10,25 @@ import com.example.echochat.model.dto.LoginDTO
 import com.example.echochat.model.dto.RegisterDTO
 import com.example.echochat.model.dto.ResLoginDTO
 import com.example.echochat.model.dto.UserDeviceToken
+import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.AuthRepository
+import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.TOKEN_KEY
 import com.example.echochat.util.TOKEN_USER_DEVICE
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.time.LocalDateTime
+import javax.inject.Inject
 
-class AuthViewModel(
-    private val repository: AuthRepository = AuthRepository()
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val authRepository: AuthRepository
 ): ViewModel() {
     private val _register = MutableLiveData<UiState<User>>()
     val register: LiveData<UiState<User>> = _register
@@ -41,37 +46,25 @@ class AuthViewModel(
     ) {
         viewModelScope.launch {
             _register.value = UiState.Loading
-            try {
-                val resResponse = repository.registerUser(
-                    RegisterDTO(
-                        username = email,
-                        password = password,
-                        name = name
-                    )
+            val response = authRepository.registerUser(
+                RegisterDTO(
+                    username = email,
+                    password = password,
+                    name = name
                 )
-                when (resResponse.statusCode) {
-                    201 -> {
-                        _register.value = UiState.Success(resResponse.data)
-                    }
-                    409 -> {
-                        _register.value = UiState.Failure("Email already exists")
-                    }
-                    else -> {
-                        _register.value = UiState.Failure(resResponse.error)
-                    }
+            )
+            when (response) {
+                is NetworkResource.Success -> {
+                    _register.value = UiState.Success(response.data)
                 }
-            } catch (ex: HttpException) {
-                _register.value = UiState.Failure(
-                    when (ex.code()) {
-                        409 -> "Email already exists"
-                        500 -> "Internal Server Error. Please try again later."
-                        else -> "Server error: ${ex.message()}"
-                    }
-                )
-            } catch (ex: IOException) {
-                _register.value = UiState.Failure("Network error. Please check your connection.")
-            } catch (ex: Exception) {
-                _register.value = UiState.Failure(ex.message ?: "Unexpected error")
+
+                is NetworkResource.NetworkException -> {
+                    _register.value = UiState.Failure(response.message)
+                }
+
+                is NetworkResource.Error -> {
+                    _register.value = UiState.Failure(response.message)
+                }
             }
         }
     }
@@ -82,54 +75,42 @@ class AuthViewModel(
     ) {
         viewModelScope.launch {
             _login.value = UiState.Loading
-            try {
-                val resResponse = repository.loginUser(
-                    LoginDTO(
-                        username = email,
-                        password = password
-                    )
+            val response = authRepository.loginUser(
+                LoginDTO(
+                    username = email,
+                    password = password
                 )
-
-                when (resResponse.statusCode) {
-                    200 -> {
-                        _login.value = UiState.Success(resResponse.data)
-                        SharedPreferencesReManager.saveData(TOKEN_KEY, resResponse.data.token)
-                        SharedPreferencesReManager.saveData(USER_SESSION, resResponse.data.user)
-                        Log.i("MYTAG", resResponse.data.user.toString())
-                        try {
-                            val temp = repository.createUserDeviceToken(UserDeviceToken(
-                                token = TOKEN_USER_DEVICE,
-                                user = resResponse.data.user,
-                                timeStamp = LocalDateTime.now().toString())
-                            )
-                        } catch (ex: Exception) {
-                            Log.i("MYTAG", ex.message.toString())
-                        }
-                        MY_USER_ID = resResponse.data.user.id!!
+            )
+            when (response) {
+                is NetworkResource.Success -> {
+                    SharedPreferencesReManager.saveData(TOKEN_KEY, response.data.token)
+                    SharedPreferencesReManager.saveData(USER_SESSION, response.data.user)
+                    Log.i("MYTAG", response.data.user.toString())
+                    try {
+                        val temp = authRepository.createUserDeviceToken(UserDeviceToken(
+                            token = TOKEN_USER_DEVICE,
+                            user = response.data.user,
+                            timeStamp = LocalDateTime.now().toString())
+                        )
+                    } catch (ex: Exception) {
+                        Log.i("MYTAG", ex.message.toString())
                     }
-                    401 -> {
-                        _login.value = UiState.Failure("Username or password is incorrect")
-                    }
-                    else -> {
-                        _login.value = UiState.Failure(resResponse.error)
-                    }
+                    MY_USER_ID = response.data.user.id!!
+                    _login.value = UiState.Success(response.data)
                 }
-            } catch (ex: HttpException) {
-                _login.value = UiState.Failure(
-                    when (ex.code()) {
-                        401 -> "Username or password is incorrect"
-                        500 -> "Internal Server Error. Please try again later."
-                        else -> "Server error: ${ex.message()}"
-                    }
-                )
-            } catch (ex: IOException) {
-                _login.value = UiState.Failure("Network error. Please check your connection.")
-            } catch (ex: Exception) {
-                _login.value = UiState.Failure(ex.message ?: "Unexpected error")
+
+                is NetworkResource.NetworkException -> {
+                    _login.value = UiState.Failure(response.message)
+                }
+
+                is NetworkResource.Error -> {
+                    _login.value = UiState.Failure(response.message)
+                }
             }
         }
     }
-
+    
+    
     fun logout() {
         SharedPreferencesReManager.clearData(TOKEN_KEY)
         SharedPreferencesReManager.clearData(USER_SESSION)

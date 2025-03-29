@@ -11,19 +11,23 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.example.echochat.databinding.FragmentConversationBinding
 import com.example.echochat.model.dto.MessageDTO
-import com.example.echochat.network.api.ApiClient.httpClient
-import com.example.echochat.network.api.ApiClient.request_chat
 import com.example.echochat.ui.chat.ChatActivity
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.intentActivity
 import com.example.echochat.util.toast
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import javax.inject.Inject
+import javax.inject.Named
 
+@AndroidEntryPoint
 class ConversationFragment : Fragment() {
     private lateinit var binding: FragmentConversationBinding
     private val viewModel: ConversationViewModel by viewModels()
@@ -31,6 +35,13 @@ class ConversationFragment : Fragment() {
     private lateinit var chatListAdapter: ChatListAdapter
     private val gson = Gson()
     private lateinit var webSocket: WebSocket
+
+    @Inject
+    lateinit var httpClient: OkHttpClient
+
+    @Inject
+    @Named("chat")
+    lateinit var requestChat: Request
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,7 +71,7 @@ class ConversationFragment : Fragment() {
     }
 
     private fun connectWebSocket() {
-        webSocket = httpClient.newWebSocket(request_chat, object : WebSocketListener() {
+        webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
                 }

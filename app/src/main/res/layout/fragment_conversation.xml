@@ -42,8 +42,7 @@
                         android:text="Chat"
                         android:textColor="@color/colorWhite"
                         android:textSize="30sp"
-                        android:textStyle="bold"></TextView>
-
+                        android:textStyle="bold"/>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/searchView"

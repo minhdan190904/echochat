@@ -7,15 +7,54 @@ import com.example.echochat.model.dto.RegisterDTO
 import com.example.echochat.model.dto.ResLoginDTO
 import com.example.echochat.model.dto.UserDeviceToken
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient.authApi
+import com.example.echochat.network.api.AuthApi
+import com.example.echochat.util.UiState
+import com.example.echochat.util.myUser
+import retrofit2.HttpException
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthRepository{
-    suspend fun registerUser(registerDTO: RegisterDTO): ResResponse<User>{
-        return authApi.registerUser(registerDTO)
+@Singleton
+class AuthRepository @Inject constructor(
+    private val authApi: AuthApi
+){
+    suspend fun registerUser(registerDTO: RegisterDTO): NetworkResource<User>{
+        return try {
+            val registerUserApi = authApi.registerUser(registerDTO)
+            NetworkResource.Success(registerUserApi.data)
+        } catch (ex: HttpException) {
+            NetworkResource.Error(
+                message = when (ex.code()) {
+                    409 -> "Email already exists"
+                    500 -> "Internal Server Error. Please try again later."
+                    else -> "Server error: ${ex.message()}"
+                }, responseCode = ex.code()
+            )
+        } catch (ex: IOException) {
+            NetworkResource.NetworkException("Network error. Please check your connection.")
+        } catch (ex: Exception) {
+            NetworkResource.Error(ex.message ?: "Unexpected error")
+        }
     }
 
-    suspend fun loginUser(loginDTO: LoginDTO): ResResponse<ResLoginDTO>{
-        return authApi.loginUser(loginDTO)
+    suspend fun loginUser(loginDTO: LoginDTO): NetworkResource<ResLoginDTO>{
+        return try {
+            val resLoginDTOApi = authApi.loginUser(loginDTO)
+            NetworkResource.Success(resLoginDTOApi.data)
+        } catch (ex: HttpException) {
+            NetworkResource.Error(
+                message = when (ex.code()) {
+                    401 -> "Username or password is incorrect"
+                    500 -> "Internal Server Error. Please try again later."
+                    else -> "Server error: ${ex.message()}"
+                }, responseCode = ex.code()
+            )
+        } catch (ex: IOException) {
+            NetworkResource.NetworkException("Network error. Please check your connection.")
+        } catch (ex: Exception) {
+            NetworkResource.Error(ex.message ?: "Unexpected error")
+        }
     }
 
     suspend fun createUserDeviceToken(userDeviceToken: UserDeviceToken): NetworkResource<UserDeviceToken> {

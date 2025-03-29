@@ -9,20 +9,15 @@ import androidx.fragment.app.activityViewModels
 import com.example.echochat.databinding.FragmentUsersBinding
 import com.example.echochat.util.UiState
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.WebSocket
 
+@AndroidEntryPoint
 class SentFriendRequestsFragment : Fragment() {
 
     private lateinit var binding: FragmentUsersBinding
     private val viewModel: FriendsViewModel by activityViewModels()
-    private val gson = Gson()
     private lateinit var usersListAdapter: FriendRequestListAdapter
-    private lateinit var webSocket: WebSocket
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

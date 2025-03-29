@@ -1,6 +1,5 @@
 package com.example.echochat.di
 
-import com.example.echochat.network.api.ApiClient
 import com.example.echochat.network.api.AuthApi
 import com.example.echochat.network.api.ChatApi
 import com.example.echochat.network.api.FileApi
@@ -8,17 +7,21 @@ import com.example.echochat.network.api.FriendRequestApi
 import com.example.echochat.network.api.NotificationApi
 import com.example.echochat.network.api.UserApi
 import com.example.echochat.util.BASE_DOMAIN
+import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.TOKEN_KEY
+import com.example.echochat.util.myUser
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Request
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -80,5 +83,25 @@ object ApiModule {
 
     @Provides
     fun provideNotificationApi(retrofit: Retrofit): NotificationApi = retrofit.create(NotificationApi::class.java)
+
+    @Provides
+    @Singleton
+    @Named("chat")
+    fun provideChatRequest(): Request {
+        return Request.Builder().url("wss://${BASE_DOMAIN}/chat").build()
+    }
+
+    @Provides
+    @Singleton
+    @Named("request")
+    fun provideRequestRequest(): Request {
+        return Request.Builder().url("wss://${BASE_DOMAIN}/request").build()
+    }
+
+    @Provides
+    @Named("status")
+    fun provideStatusRequest(): Request {
+        return Request.Builder().url("wss://${BASE_DOMAIN}/status/${myUser?.id}").build()
+    }
 
 }

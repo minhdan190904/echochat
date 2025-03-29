@@ -23,17 +23,19 @@ import com.example.echochat.databinding.FragmentChatBinding
 import com.example.echochat.model.Message
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
-import com.example.echochat.network.api.ApiClient.httpClient
-import com.example.echochat.network.api.ApiClient.request_chat
+import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.customLastSeenChat
 import com.example.echochat.util.toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -42,7 +44,10 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
+import javax.inject.Named
 
+@AndroidEntryPoint
 class ChatFragment : Fragment() {
     private lateinit var binding: FragmentChatBinding
     private val viewModel: ChatViewModel by viewModels()
@@ -52,10 +57,24 @@ class ChatFragment : Fragment() {
     private lateinit var webSocket: WebSocket
     private var isNotInit: Boolean = false
 
+    @Inject
+    lateinit var httpClient: OkHttpClient
+
+    @Inject
+    @Named("chat")
+    lateinit var requestChat: Request
+
+    @Inject
+    lateinit var networkMonitor: NetworkMonitor
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.getChat(CHAT_ID)
-        connectWebSocket()
+        networkMonitor.isNetworkAvailable.observeForever {
+            if(it){
+                connectWebSocket()
+                viewModel.getChat(CHAT_ID)
+            }
+        }
     }
 
     override fun onCreateView(
@@ -81,7 +100,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun connectWebSocket() {
-        webSocket = httpClient.newWebSocket(request_chat, object : WebSocketListener() {
+        webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
 

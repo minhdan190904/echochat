@@ -4,7 +4,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.echochat.databinding.ItemUserStoryBinding
-import com.example.echochat.model.Chat
 import com.example.echochat.model.User
 import com.example.echochat.util.BindingUtils.setImageUrl
 

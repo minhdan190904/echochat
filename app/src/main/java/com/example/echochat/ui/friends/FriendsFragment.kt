@@ -15,15 +15,13 @@ import com.example.echochat.ui.home.HomeFragmentDirections
 import com.example.echochat.util.getFriend
 import com.example.echochat.util.toast
 import com.google.android.material.tabs.TabLayout
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class FriendsFragment : Fragment() {
 
     private lateinit var binding: FragmentFriendsBinding
     private val viewModel: FriendsViewModel by activityViewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

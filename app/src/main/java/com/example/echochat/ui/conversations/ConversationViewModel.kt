@@ -10,21 +10,30 @@ import com.example.echochat.model.Chat
 import com.example.echochat.model.FriendRequest
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
+import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient
-import com.example.echochat.network.api.ApiClient.httpClient
-import com.example.echochat.network.api.ApiClient.request_request
 import com.example.echochat.repository.ChatRepository
-import com.example.echochat.repository.UserRepository
 import com.example.echochat.util.MY_USER_ID
+import com.example.echochat.util.myUser
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import javax.inject.Inject
+import javax.inject.Named
 
-class ConversationViewModel(
-    private val chatRepository: ChatRepository = ChatRepository(),
+@HiltViewModel
+class ConversationViewModel @Inject constructor(
+
+    private val chatRepository: ChatRepository,
+    private val httpClient: OkHttpClient,
+    @Named("request") private val requestRequest: Request,
+    private val networkMonitor: NetworkMonitor
+
 ): ViewModel() {
 
     private val _chatList = MutableLiveData<List<Chat>>()
@@ -44,10 +53,9 @@ class ConversationViewModel(
     private val gson = Gson()
     private lateinit var webSocket: WebSocket
 
-
     init {
-        getMyConversations()
-        webSocket = httpClient.newWebSocket(request_request, object : WebSocketListener() {
+
+        webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
 
@@ -68,6 +76,17 @@ class ConversationViewModel(
                 }
             }
         })
+
+        networkMonitor.isNetworkAvailable.observeForever { isAvailable ->
+            if (isAvailable) {
+                getMyConversations()
+            } else {
+                if(_chatUiState.value != UiState.HasData){
+                    _chatUiState.value = UiState.NoData
+                    _friendsUiState.value = UiState.NoData
+                }
+            }
+        }
     }
 
     fun getMyConversations() {
@@ -78,7 +97,7 @@ class ConversationViewModel(
             when (response) {
                 is NetworkResource.Success -> {
                     _chatList.value = response.data.sortedBy { it.getLastMessage()?.id }.reversed()
-                    _friendsList.value = response.data.mapNotNull { chatRepository.myUser?.let { it1 ->
+                    _friendsList.value = response.data.mapNotNull { myUser?.let { it1 ->
                         it.getOtherUser(
                             it1
                         )

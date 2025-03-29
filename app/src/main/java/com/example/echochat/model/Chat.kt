@@ -7,9 +7,6 @@ data class Chat(
     var id: Int? = null,
     val messageList: MutableList<Message> = mutableListOf()
 ) {
-    fun addMessage(message: Message) {
-        messageList.add(message)
-    }
 
     fun getLastMessage(): Message? = messageList.lastOrNull()
 

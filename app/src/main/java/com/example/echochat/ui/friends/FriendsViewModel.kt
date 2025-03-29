@@ -8,25 +8,36 @@ import androidx.lifecycle.viewModelScope
 import com.example.echochat.model.FriendRequest
 import com.example.echochat.model.dto.FriendRequestDTO
 import com.example.echochat.model.dto.NotificationRequest
+import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient.httpClient
-import com.example.echochat.network.api.ApiClient.request_request
 import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FriendRequestRepository
 import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.UiState
+import com.example.echochat.util.myUser
 import com.google.gson.Gson
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import javax.inject.Inject
+import javax.inject.Named
 
-class FriendsViewModel(
-    private val friendRequestRepository: FriendRequestRepository = FriendRequestRepository(),
-    private val notificationRepository: NotificationRepository = NotificationRepository(),
-    private val chatRepository: ChatRepository = ChatRepository()
+@HiltViewModel
+class FriendsViewModel @Inject constructor(
+
+    private val friendRequestRepository: FriendRequestRepository,
+    private val notificationRepository: NotificationRepository,
+    private val chatRepository: ChatRepository,
+    private val httpClient: OkHttpClient,
+    @Named("request") private val requestRequest: Request,
+    private val networkMonitor: NetworkMonitor
+
 ): ViewModel() {
 
     private val _usersList = MutableLiveData<List<FriendRequestDTO>>()
@@ -62,8 +73,28 @@ class FriendsViewModel(
     private lateinit var webSocket: WebSocket
 
     init {
-        getMyFriendUser()
-        webSocket = httpClient.newWebSocket(request_request, object : WebSocketListener() {
+        networkMonitor.isNetworkAvailable.observeForever { isNetworkAvailable ->
+            if(isNetworkAvailable){
+                connectWebSocket()
+                getMyFriendUser()
+            } else{
+                if(_usersUiState.value != UiState.HasData){
+                    _usersUiState.value = UiState.NoData
+                }
+
+                if(_usersSendUiState.value != UiState.HasData){
+                    _usersSendUiState.value = UiState.NoData
+                }
+
+                if(_usersReceiveUiState.value != UiState.HasData){
+                    _usersReceiveUiState.value = UiState.NoData
+                }
+            }
+        }
+    }
+
+    private fun connectWebSocket(){
+        webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
 
@@ -85,7 +116,7 @@ class FriendsViewModel(
         })
     }
 
-    fun listenerWebSocket(message: String) {
+    private fun listenerWebSocket(message: String) {
         webSocket.send(message)
     }
 
@@ -99,10 +130,10 @@ class FriendsViewModel(
                 is NetworkResource.Success -> {
                     _usersList.value = response.data
                     _usersListReceive.value = response.data.filter {
-                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.receiver.id == friendRequestRepository.myUser?.id
+                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.receiver.id == myUser?.id
                     }
                     _usersListSend.value = response.data.filter {
-                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.sender.id ==  friendRequestRepository.myUser?.id
+                        it.requestStatus == FriendRequest.RequestStatus.PENDING && it.sender.id == myUser?.id
                     }
                 }
                 is NetworkResource.Error -> {

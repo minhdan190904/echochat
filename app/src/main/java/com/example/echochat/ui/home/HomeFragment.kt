@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,15 +16,27 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentHomeBinding
-import com.example.echochat.network.api.ApiClient.httpClient
-import com.example.echochat.network.api.ApiClient.request_status
+import com.example.echochat.util.toast
+import dagger.hilt.android.AndroidEntryPoint
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import javax.inject.Inject
+import javax.inject.Named
 
+@AndroidEntryPoint
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
     private lateinit var webSocket: WebSocket
+
+    @Inject
+    lateinit var httpClient: OkHttpClient
+
+    @Inject
+    @Named("status")
+    lateinit var requestStatus: Request
 
     override fun onStart() {
         super.onStart()
@@ -32,7 +45,6 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        connectWebSocketStatus()
     }
 
     override fun onCreateView(
@@ -54,7 +66,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun connectWebSocketStatus() {
-        webSocket = httpClient.newWebSocket(request_status, object : WebSocketListener() {})
+        webSocket = httpClient.newWebSocket(requestStatus, object : WebSocketListener() {})
     }
 
     private fun getPermission() {

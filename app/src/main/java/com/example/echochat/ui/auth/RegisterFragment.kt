@@ -13,7 +13,9 @@ import com.example.echochat.util.UiState
 import com.example.echochat.util.hide
 import com.example.echochat.util.show
 import com.example.echochat.util.toast
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class RegisterFragment : Fragment() {
 
     private lateinit var binding: FragmentRegisterBinding

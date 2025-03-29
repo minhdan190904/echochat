@@ -106,4 +106,10 @@ dependencies {
 
     // ✅ WorkManager
     implementation("androidx.work:work-runtime-ktx:2.8.1")
+
+    // ✅ Room database
+    val roomVersion = "2.6.0"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    kapt("androidx.room:room-compiler:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
 }

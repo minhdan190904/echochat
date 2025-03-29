@@ -11,14 +11,18 @@ import com.example.echochat.repository.FileRepository
 import com.example.echochat.repository.UserRepository
 import com.example.echochat.util.UiState
 import com.example.echochat.util.formatOnlyDate
+import com.example.echochat.util.myUser
 import com.example.echochat.util.toDate
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
 import java.util.Date
+import javax.inject.Inject
 
-class UpdateProfileViewModel(
-    private val fileRepository: FileRepository = FileRepository(),
-    private val userRepository: UserRepository = UserRepository()
+@HiltViewModel
+class UpdateProfileViewModel @Inject constructor(
+    private val fileRepository: FileRepository,
+    private val userRepository: UserRepository
 ): ViewModel() {
     private val _updateUiState = MutableLiveData<UiState<Nothing>>()
     val updateUiState: LiveData<UiState<Nothing>> = _updateUiState
@@ -26,10 +30,10 @@ class UpdateProfileViewModel(
     private val _updateAvatarUiState = MutableLiveData<UiState<Nothing>>()
     val updateAvatarUiState: LiveData<UiState<Nothing>> = _updateAvatarUiState
 
-    val name = MutableLiveData<String>(fileRepository.myUser?.name)
-    val email = MutableLiveData<String>(fileRepository.myUser?.email)
-    val profileImageUrl = MutableLiveData<String>(fileRepository.myUser?.profileImageUrl)
-    val birthday = MutableLiveData<String>(fileRepository.myUser?.birthday?.formatOnlyDate())
+    val name = MutableLiveData<String>(myUser?.name)
+    val email = MutableLiveData<String>(myUser?.email)
+    val profileImageUrl = MutableLiveData<String>(myUser?.profileImageUrl)
+    val birthday = MutableLiveData<String>(myUser?.birthday?.formatOnlyDate())
 
     fun updateProfile() {
         viewModelScope.launch {
@@ -38,7 +42,7 @@ class UpdateProfileViewModel(
             val emailUser: String = email.value!!
             val profileImageUrlUser: String = profileImageUrl.value!!
             val birthdayUser: Date = birthday.value!!.toDate()!!
-            val user: User = fileRepository.myUser!!.copy(name = nameUser, email = emailUser, profileImageUrl = profileImageUrlUser, birthday = birthdayUser)
+            val user: User = myUser!!.copy(name = nameUser, email = emailUser, profileImageUrl = profileImageUrlUser, birthday = birthdayUser)
             val response =  userRepository.updateUser(user)
             when(response) {
                 is NetworkResource.Success -> {

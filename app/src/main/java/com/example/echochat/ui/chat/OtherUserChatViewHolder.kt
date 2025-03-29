@@ -21,7 +21,6 @@ class OtherUserChatViewHolder private constructor(private val binding: ItemChatO
             tvMessage.isVisible = item.messageType == Message.MessageType.TEXT
             executePendingBindings()
         }
-
     }
 
     companion object {

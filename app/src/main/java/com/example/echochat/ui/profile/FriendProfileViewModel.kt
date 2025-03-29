@@ -6,13 +6,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.echochat.model.User
 import com.example.echochat.network.NetworkResource
-import com.example.echochat.network.api.ApiClient
 import com.example.echochat.repository.UserRepository
 import com.example.echochat.util.UiState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class FriendProfileViewModel(
-    private val userRepository: UserRepository = UserRepository()
+@HiltViewModel
+class FriendProfileViewModel @Inject constructor(
+    private val userRepository: UserRepository
 ): ViewModel() {
 
     private val _friendUser = MutableLiveData<User>()
