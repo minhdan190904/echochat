@@ -44,6 +44,7 @@
                     android:onClick="@{() -> viewmodel.updateProfile()}"
                     android:text="Lưu"
                     android:textColor="@color/colorWhite"
+                    android:enabled="false"
                     android:textSize="18sp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -134,6 +135,7 @@
                         android:textSize="15sp" />
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/name"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -169,6 +171,7 @@
                         android:textSize="15sp" />
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/email"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -204,6 +207,7 @@
                         android:textSize="15sp" />
 
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/birthday"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -231,16 +235,27 @@
 
         </LinearLayout>
 
+        <View
+            android:id="@+id/blockingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80FFFFFF"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"/>
+
         <ProgressBar
             android:id="@+id/progressBar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:indeterminateTint="@color/colorPrimary"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>
