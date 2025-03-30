@@ -11,7 +11,6 @@ import androidx.navigation.fragment.navArgs
 import com.example.echochat.databinding.FragmentFriendProfileBinding
 import com.example.echochat.ui.chat.ChatActivity
 import com.example.echochat.util.CHAT_ID
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.intentActivity
 import com.example.echochat.util.toast
 import dagger.hilt.android.AndroidEntryPoint

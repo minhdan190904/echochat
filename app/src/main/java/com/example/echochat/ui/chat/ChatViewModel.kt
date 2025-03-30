@@ -212,7 +212,7 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    suspend fun sendNotification(chat: Chat, message: Message, imageUrl: String) {
+    private suspend fun sendNotification(chat: Chat, message: Message, imageUrl: String) {
         if(message.messageType == Message.MessageType.IMAGE){
             message.message = "Đã gửi 1 ảnh"
         } else if(message.messageType == Message.MessageType.VIDEO){

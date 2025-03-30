@@ -4,5 +4,6 @@ import com.example.echochat.model.Message
 
 data class MessageDTO(
     val message: Message,
-    val idChat: Int
+    val receiverId: Int,
+    val chatId: Int
 )

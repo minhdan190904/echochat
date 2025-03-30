@@ -45,7 +45,7 @@ fun String.toDate(): Date? {
 }
 
 fun FriendRequestDTO.getFriend(): User {
-    return if (MY_USER_ID == this.sender.id) this.receiver else this.sender
+    return if (myUser?.id == this.sender.id) this.receiver else this.sender
 }
 
 fun Date.customLastSeenChat(): String {

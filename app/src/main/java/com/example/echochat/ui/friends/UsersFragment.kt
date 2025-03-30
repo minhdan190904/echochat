@@ -6,19 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.navigation.findNavController
-import androidx.navigation.navOptions
-import com.example.echochat.R
 import com.example.echochat.databinding.FragmentUsersBinding
-import com.example.echochat.model.FriendRequest
-import com.example.echochat.ui.home.HomeFragmentDirections
 import com.example.echochat.util.UiState
-import com.example.echochat.util.getFriend
-import com.example.echochat.util.toast
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
-import okhttp3.WebSocket
 
 @AndroidEntryPoint
 class UsersFragment : Fragment() {

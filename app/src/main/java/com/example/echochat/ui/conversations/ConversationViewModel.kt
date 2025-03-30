@@ -13,7 +13,6 @@ import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.ChatRepository
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.myUser
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -62,7 +61,7 @@ class ConversationViewModel @Inject constructor(
             override fun onMessage(webSocket: WebSocket, text: String) {
                 viewModelScope.launch {
                     val data = text.split("-")
-                    if(data.contains(MY_USER_ID.toString()) &&
+                    if(data.contains(myUser?.id.toString()) &&
                         data.contains(FriendRequest.RequestStatus.ACCEPTED.toString())){
                         getMyConversations()
                     }
@@ -122,7 +121,7 @@ class ConversationViewModel @Inject constructor(
 
     fun updateLastMessage(messageDTO: MessageDTO) {
         val updatedList = _chatList.value?.toMutableList() ?: return
-        val index = updatedList.indexOfFirst { it.id == messageDTO.idChat }
+        val index = updatedList.indexOfFirst { it.id == messageDTO.chatId }
         if (index != -1) {
             getMyConversations()
         }

@@ -3,6 +3,7 @@ package com.example.echochat.ui.conversations
 import ChatListAdapter
 import FriendListAdapter
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import androidx.fragment.app.Fragment
 import android.view.View
@@ -13,8 +14,8 @@ import com.example.echochat.databinding.FragmentConversationBinding
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.ui.chat.ChatActivity
 import com.example.echochat.util.CHAT_ID
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.intentActivity
+import com.example.echochat.util.myUser
 import com.example.echochat.util.toast
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
@@ -67,6 +68,7 @@ class ConversationFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.i("WEBSOCKET", "Destroy websocket")
         webSocket.close(1000, "Fragment destroyed")
     }
 
@@ -74,6 +76,7 @@ class ConversationFragment : Fragment() {
         webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
+                    Log.i("WEBSOCKET", "Connect websocket")
                 }
             }
 
@@ -82,6 +85,7 @@ class ConversationFragment : Fragment() {
                     try {
                         val messageDTO = gson.fromJson(text, MessageDTO::class.java)
                         viewModel.updateLastMessage(messageDTO)
+                        Log.i("WEBSOCKET", "Load convertion")
                     } catch (e: Exception) {
                         toast(e.message.toString())
                     }
@@ -130,7 +134,7 @@ class ConversationFragment : Fragment() {
 
         friendsListAdapter.setOnClick = { user ->
             val chat = chatListAdapter.currentList.find {
-                val otherUser = if (it.user1.id == MY_USER_ID) it.user2 else it.user1
+                val otherUser = if (it.user1.id == myUser?.id) it.user2 else it.user1
                 otherUser.id == user.id
             }
 

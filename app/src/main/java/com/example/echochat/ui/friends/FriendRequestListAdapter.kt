@@ -13,10 +13,10 @@ import com.example.echochat.databinding.ItemUserBinding
 import com.example.echochat.model.FriendRequest
 import com.example.echochat.model.dto.FriendRequestDTO
 import com.example.echochat.util.BindingUtils.setImageUrl
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.VIEW_TYPE_HEADER
 import com.example.echochat.util.VIEW_TYPE_ITEM
 import com.example.echochat.util.getFriend
+import com.example.echochat.util.myUser
 
 class FriendRequestListAdapter(
     private val viewModel: FriendsViewModel? = null,
@@ -72,13 +72,13 @@ class FriendRequestListAdapter(
             bind.tvUserStatus.text = when(friendRequest.requestStatus){
                 FriendRequest.RequestStatus.ACCEPTED -> "Hãy bắt đầu trò chuyện"
                 FriendRequest.RequestStatus.REJECTED -> "Gửi lời mời để kết bạn"
-                else -> if (friendRequest.sender.id == MY_USER_ID) "Đã gửi lời mời kết bạn" else "Nhận lời mời kết bạn"
+                else -> if (friendRequest.sender.id == myUser?.id) "Đã gửi lời mời kết bạn" else "Nhận lời mời kết bạn"
             }
 
             bind.btnAction1.setOnClickListener {
                 val friendRequestDTOUpdate = friendRequest.copy().apply {
                     requestStatus = FriendRequest.RequestStatus.REJECTED
-                    if (sender.id != MY_USER_ID) {
+                    if (sender.id != myUser?.id) {
                         sender = receiver.also { receiver = sender }
                     }
                 }
@@ -87,20 +87,20 @@ class FriendRequestListAdapter(
 
             bind.imageProfile.setOnClickListener {
                 viewModel?.openFriendProfile(friendRequest)
-                viewModel?.getChatId(MY_USER_ID, friendRequest.getFriend().id!!)
+                viewModel?.getChatId(myUser?.id!!, friendRequest.getFriend().id!!)
             }
 
             bind.btnAction2.setOnClickListener {
                 val friendRequestDTOUpdate = friendRequest.copy().apply {
                     requestStatus = when (friendRequest.requestStatus) {
-                        FriendRequest.RequestStatus.PENDING -> if (sender.id == MY_USER_ID) FriendRequest.RequestStatus.REJECTED else FriendRequest.RequestStatus.ACCEPTED
+                        FriendRequest.RequestStatus.PENDING -> if (sender.id == myUser?.id) FriendRequest.RequestStatus.REJECTED else FriendRequest.RequestStatus.ACCEPTED
                         FriendRequest.RequestStatus.REJECTED -> FriendRequest.RequestStatus.PENDING
                         else -> requestStatus
                     }
-                    if (sender.id != MY_USER_ID && requestStatus == FriendRequest.RequestStatus.PENDING) {
+                    if (sender.id != myUser?.id && requestStatus == FriendRequest.RequestStatus.PENDING) {
                         sender = receiver.also { receiver = sender }
                     }
-                    if (sender.id != MY_USER_ID && requestStatus == FriendRequest.RequestStatus.ACCEPTED) {
+                    if (sender.id != myUser?.id && requestStatus == FriendRequest.RequestStatus.ACCEPTED) {
                         sender = receiver.also { receiver = sender }
                     }
                 }
@@ -130,7 +130,7 @@ class FriendRequestListAdapter(
 
                 else -> {
                     bind.apply {
-                        if(friendRequest.sender.id == MY_USER_ID){
+                        if(friendRequest.sender.id == myUser?.id){
                             btnAction1.visibility = View.GONE
                             btnAction2.apply {
                                 visibility = View.VISIBLE

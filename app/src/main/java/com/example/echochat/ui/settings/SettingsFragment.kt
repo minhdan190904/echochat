@@ -18,9 +18,7 @@ import com.example.echochat.databinding.FragmentSettingsBinding
 import com.example.echochat.model.User
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.LocaleHelper
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.USER_SESSION
-import com.google.android.material.bottomsheet.BottomSheetDialog
 
 
 class SettingsFragment : Fragment() {
@@ -51,7 +49,6 @@ class SettingsFragment : Fragment() {
 
         binding.tvLogout.setOnClickListener {
             SharedPreferencesReManager.clearAllData()
-            MY_USER_ID = -1
 //            requireActivity().findNavController(R.id.nav_host_fragment_main)
 //                .navigate(
 //                R.id.action_homeFragment_to_loginFragment,

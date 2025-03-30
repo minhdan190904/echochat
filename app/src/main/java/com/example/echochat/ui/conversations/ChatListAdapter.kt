@@ -1,6 +1,7 @@
 import android.annotation.SuppressLint
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -10,7 +11,7 @@ import com.example.echochat.databinding.ItemConversationBinding
 import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
 import com.example.echochat.util.BindingUtils.setImageUrl
-import com.example.echochat.util.MY_USER_ID
+import com.example.echochat.util.myUser
 
 class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(ChatDiffCallback()) {
 
@@ -28,17 +29,17 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
     inner class ChatListViewHolder(private val bind: ItemConversationBinding) :
         RecyclerView.ViewHolder(bind.root) {
         fun bind(chat: Chat) {
-            val otherUser = if (chat.user1.id == MY_USER_ID) chat.user2 else chat.user1
+            val otherUser = if (chat.user1.id == myUser?.id) chat.user2 else chat.user1
 
             chat.getLastMessage()?.let { msg ->
                 bind.tvUserLastMessage.text = if(msg.messageType == Message.MessageType.IMAGE) {
-                    if(msg.sender?.id == MY_USER_ID) {
+                    if(msg.sender?.id == myUser?.id) {
                         bind.root.context.getString(R.string.last_message_me_image)
                     } else {
                         bind.root.context.getString(R.string.last_message_other_image, msg.sender?.name)
                     }
                 } else {
-                    if (msg.sender?.id == MY_USER_ID) {
+                    if (msg.sender?.id == myUser?.id) {
                         bind.root.context.getString(R.string.last_message_me, msg.message)
                     } else {
                         bind.root.context.getString(R.string.last_message_other, msg.sender?.name, msg.message)
@@ -57,7 +58,7 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
             }
 
             chat.getLastMessage()?.let { msg ->
-                if(!msg.isSeen && msg.sender?.id != MY_USER_ID) {
+                if(!msg.isSeen && msg.sender?.id != myUser?.id) {
                     bind.tvUserLastMessageDate.setTypeface(null, android.graphics.Typeface.BOLD)
                     bind.tvUserLastMessage.setTypeface(null, android.graphics.Typeface.BOLD)
                 } else {
@@ -66,12 +67,13 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
                 }
             }
 
-            val userOnlineIconColor = if (otherUser.isOnline) {
-                bind.root.resources.getColor(android.R.color.holo_green_light, null)
-            } else {
-                bind.root.resources.getColor(android.R.color.darker_gray, null)
+            bind.iconOnline.apply {
+                visibility = if (otherUser.isOnline) View.VISIBLE else View.GONE
+                if (otherUser.isOnline) {
+                    setBackgroundColor(bind.root.resources.getColor(android.R.color.holo_green_light, null))
+                }
             }
-            bind.iconOnline.setBackgroundColor(userOnlineIconColor)
+
 
             bind.root.setOnClickListener {
                 setOnClick?.invoke(chat)

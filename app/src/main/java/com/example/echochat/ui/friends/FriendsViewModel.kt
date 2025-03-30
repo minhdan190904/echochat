@@ -14,7 +14,6 @@ import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FriendRequestRepository
 import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.util.CHAT_ID
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.UiState
 import com.example.echochat.util.myUser
 import com.google.gson.Gson
@@ -101,7 +100,7 @@ class FriendsViewModel @Inject constructor(
             override fun onMessage(webSocket: WebSocket, text: String) {
                 viewModelScope.launch {
                     val data = text.split("-")
-                    if(data.contains(MY_USER_ID.toString())){
+                    if(data.contains(myUser?.id.toString())){
                         getMyFriendUser()
                     }
                 }

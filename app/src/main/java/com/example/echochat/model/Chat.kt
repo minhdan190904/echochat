@@ -1,5 +1,6 @@
 package com.example.echochat.model
-import com.example.echochat.util.MY_USER_ID
+
+import com.example.echochat.util.myUser
 
 data class Chat(
     val user1: User,
@@ -23,6 +24,6 @@ data class Chat(
     }
 
     fun getChatTitle(): String {
-        return if (MY_USER_ID == user1.id) user2.name else user1.name
+        return if (myUser?.id == user1.id) user2.name else user1.name
     }
 }

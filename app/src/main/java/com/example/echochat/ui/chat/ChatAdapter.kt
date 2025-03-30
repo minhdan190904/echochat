@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.echochat.R
 import com.example.echochat.model.Message
-import com.example.echochat.util.MY_USER_ID
+import com.example.echochat.util.myUser
 
 class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageItemCallback()) {
 
@@ -35,7 +35,7 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageItemCal
     override fun getItemViewType(position: Int): Int {
 
         return when (getItem(position).sender?.id) {
-            MY_USER_ID -> R.layout.item_chat_me
+            myUser?.id -> R.layout.item_chat_me
             else -> R.layout.item_chat_other_person
 
         }

@@ -25,8 +25,8 @@ import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.util.CHAT_ID
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.customLastSeenChat
+import com.example.echochat.util.myUser
 import com.example.echochat.util.toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
@@ -108,7 +108,7 @@ class ChatFragment : Fragment() {
                 lifecycleScope.launch {
                     try {
                         val messageDTO = gson.fromJson(text, MessageDTO::class.java)
-                        if (messageDTO.idChat == CHAT_ID) {
+                        if (messageDTO.chatId == CHAT_ID) {
                             chatTempList.add(messageDTO.message)
                             chatAdapter.submitList(chatTempList)
                             chatAdapter.notifyDataSetChanged()
@@ -161,12 +161,12 @@ class ChatFragment : Fragment() {
                 }
             }
 
-            val receiver = if (chat.user1.id == MY_USER_ID) chat.user2 else chat.user1
+            val receiver = if (chat.user1.id == myUser?.id) chat.user2 else chat.user1
 
             if (isNotInit) {
                 val lastMessage = chat.getLastMessage()
                 if (lastMessage != null) {
-                    val jsonMessage = gson.toJson(chat.id?.let { MessageDTO(lastMessage, it) })
+                    val jsonMessage = gson.toJson(chat.id?.let { MessageDTO(lastMessage, 1, CHAT_ID) })
                     webSocket.send(jsonMessage)
                 }
             }
@@ -188,7 +188,7 @@ class ChatFragment : Fragment() {
 
             if (isNotInit) {
                 if (message != null) {
-                    val jsonMessage = gson.toJson(MessageDTO(message, CHAT_ID))
+                    val jsonMessage = gson.toJson(MessageDTO(message, 1, CHAT_ID))
                     webSocket.send(jsonMessage)
                 }
             }

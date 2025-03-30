@@ -12,17 +12,13 @@ import com.example.echochat.model.dto.ResLoginDTO
 import com.example.echochat.model.dto.UserDeviceToken
 import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.AuthRepository
-import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.SharedPreferencesReManager
-import com.example.echochat.util.MY_USER_ID
 import com.example.echochat.util.TOKEN_KEY
 import com.example.echochat.util.TOKEN_USER_DEVICE
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -95,7 +91,6 @@ class AuthViewModel @Inject constructor(
                     } catch (ex: Exception) {
                         Log.i("MYTAG", ex.message.toString())
                     }
-                    MY_USER_ID = response.data.user.id!!
                     _login.value = UiState.Success(response.data)
                 }
 
@@ -115,14 +110,12 @@ class AuthViewModel @Inject constructor(
         SharedPreferencesReManager.clearData(TOKEN_KEY)
         SharedPreferencesReManager.clearData(USER_SESSION)
         Log.i("LOGOUT", "LOGOUT")
-        MY_USER_ID = 1
         _logout.value = "Logout"
     }
 
     fun getSession(result: (User?) -> Unit) {
         val user = SharedPreferencesReManager.getData(USER_SESSION, User::class.java)
         if(user != null){
-            MY_USER_ID = user.id!!
             result.invoke(user)
         } else {
             Log.i("SESSION_TAG", "12321")
