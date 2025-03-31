@@ -1,6 +1,12 @@
 package com.example.echochat.ui.auth
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.util.Patterns
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,6 +15,7 @@ import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.echochat.R
 import com.example.echochat.databinding.FragmentRegisterBinding
 import com.example.echochat.util.UiState
 import com.example.echochat.util.hide
@@ -43,7 +50,7 @@ class RegisterFragment : Fragment() {
                 )
             }
 
-            btnBackToLogin.setOnClickListener {
+            imgBack.setOnClickListener {
                 findNavController().popBackStack()
             }
 
@@ -104,8 +111,50 @@ class RegisterFragment : Fragment() {
                 }
                 checkValidateInput()
             }
+
+            checkBox.setOnCheckedChangeListener { _, isChecked ->
+                checkValidateInput()
+            }
+
             observer()
+
+            setUpSpannable()
         }
+    }
+
+    private fun setUpSpannable(){
+
+        //span for check box
+        val spanCheckBox = SpannableString("I agree to Terms and Privacy Policy")
+        spanCheckBox.setSpan(object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                val url = "https://telegram.org/tos"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+        }, 11, 16, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        spanCheckBox.setSpan(object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                val url = "https://telegram.org/privacy?setln=fa"
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                startActivity(intent)
+            }
+        }, 21, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        binding.tvTermsAndPolicy.text = spanCheckBox
+        binding.tvTermsAndPolicy.movementMethod = LinkMovementMethod.getInstance()
+
+        //span for text view
+        val spanTextView = SpannableString("Had a account? Sign in")
+        spanTextView.setSpan(object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                findNavController().popBackStack()
+            }
+        }, 15, 22, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        binding.btnSignIn.text = spanTextView
+        binding.btnSignIn.movementMethod = LinkMovementMethod.getInstance()
     }
 
     private fun getName(): String {
@@ -127,7 +176,8 @@ class RegisterFragment : Fragment() {
         val isEmailValid = binding.etEmail.error == null && email.isNotEmpty()
         val isPasswordValid = binding.etPassword.error == null && password.isNotEmpty()
         val isNameValid = binding.etFullName.error == null && name.isNotEmpty()
-        binding.btnConfirmSignUp.isEnabled = isEmailValid && isPasswordValid && isNameValid
+        val isAgree = binding.checkBox.isChecked
+        binding.btnConfirmSignUp.isEnabled = isEmailValid && isPasswordValid && isNameValid && isAgree
     }
 
     private fun observer() {

@@ -1,6 +1,10 @@
 package com.example.echochat.ui.auth
 
 import android.os.Bundle
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.util.Log
 import android.util.Patterns
 import androidx.fragment.app.Fragment
@@ -59,10 +63,6 @@ class LoginFragment : Fragment() {
                 )
             }
 
-            btnSignUp.setOnClickListener {
-                findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
-            }
-
             binding.etEmailLogin.addTextChangedListener {
                 val emailLogin = it.toString().trim()
                 when {
@@ -94,9 +94,25 @@ class LoginFragment : Fragment() {
                 checkValidateInput()
             }
 
-
         }
+
         observer()
+
+        setUpSpannable()
+
+    }
+
+    private fun setUpSpannable(){
+        val span = SpannableString("New user? Sign up")
+
+        span.setSpan(object : ClickableSpan() {
+            override fun onClick(widget: View) {9
+                findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
+            }
+        }, 10, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+        binding.btnSignUp.text = span
+        binding.btnSignUp.movementMethod = LinkMovementMethod.getInstance()
     }
 
     private fun checkValidateInput() {
