@@ -10,6 +10,7 @@ import com.example.echochat.util.BASE_DOMAIN
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.TOKEN_KEY
 import com.example.echochat.util.myUser
+import com.example.echochat.util.tokenApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,7 +32,7 @@ object ApiModule {
     @Singleton
     fun provideAuthInter(): Interceptor {
         return Interceptor { chain ->
-            val token = SharedPreferencesReManager.getData(TOKEN_KEY, String::class.java)
+            val token = tokenApi
             val request = chain.request().newBuilder()
                 .apply {
                     token?.let {
@@ -84,7 +85,6 @@ object ApiModule {
     fun provideNotificationApi(retrofit: Retrofit): NotificationApi = retrofit.create(NotificationApi::class.java)
 
     @Provides
-    @Singleton
     @Named("chat")
     fun provideChatRequest(): Request {
         return Request.Builder().url("wss://${BASE_DOMAIN}/chat/${myUser?.id}").build()

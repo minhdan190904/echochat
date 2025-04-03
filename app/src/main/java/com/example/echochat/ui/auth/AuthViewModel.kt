@@ -16,6 +16,8 @@ import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.TOKEN_KEY
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
+import com.example.echochat.util.myUser
+import com.example.echochat.util.tokenApi
 import com.example.echochat.util.tokenUserDevice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -76,8 +78,8 @@ class AuthViewModel @Inject constructor(
             )
             when (response) {
                 is NetworkResource.Success -> {
-                    SharedPreferencesReManager.saveData(TOKEN_KEY, response.data.token)
-                    SharedPreferencesReManager.saveData(USER_SESSION, response.data.user)
+                    tokenApi = response.data.token
+                    myUser = response.data.user
                     Log.i("MYTAG", response.data.user.toString())
                     try {
                         val temp = authRepository.createUserDeviceToken(UserDeviceToken(

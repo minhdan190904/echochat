@@ -53,15 +53,15 @@ class ConversationViewModel @Inject constructor(
     val searchQuery = MutableLiveData<String>()
 
     private val gson = Gson()
-    private lateinit var webSocket: WebSocket
+    private var webSocket: WebSocket? = null
 
-    private lateinit var webSocket2: WebSocket
+    private var webSocket2: WebSocket? = null
 
     init {
         networkMonitor.isNetworkAvailable.observeForever { isAvailable ->
             if (isAvailable) {
-                connectWebsocket()
                 getMyConversations()
+                connectWebsocket()
                 connectWebSocket2()
             } else {
                 if(_chatUiState.value != UiState.HasData){
@@ -72,7 +72,19 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
-    private fun connectWebsocket(){
+
+    private fun closeWebSocket1() {
+        webSocket?.close(1000, "ViewModel cleared")
+        webSocket = null
+    }
+
+    private fun closeWebSocket2() {
+        webSocket2?.close(1000, "ViewModel cleared")
+        webSocket2 = null
+    }
+
+    fun connectWebsocket(){
+        closeWebSocket1()
         webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
@@ -126,11 +138,12 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
-    private fun connectWebSocket2() {
+    fun connectWebSocket2() {
+        closeWebSocket2()
         webSocket2 = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 viewModelScope.launch {
-                    Log.i("WEBSOCKET", "Connect websocket")
+                    Log.i("WEBSOCKET1", "Connect websocket")
                 }
             }
 
@@ -138,27 +151,25 @@ class ConversationViewModel @Inject constructor(
                 viewModelScope.launch {
                     try {
                         val messageDTO = gson.fromJson(text, MessageDTO::class.java)
-                        updateLastMessage(messageDTO)
-                        Log.i("WEBSOCKET", "Load conversation")
+                        getMyConversations()
+                        Log.i("WEBSOCKET1", "Load conversation")
                     } catch (e: Exception) {
-                        Log.i("WEBSOCKET", "Load conversation false")
+                        Log.i("WEBSOCKET1", "Load conversation false")
                     }
                 }
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 viewModelScope.launch {
+                    Log.i("WEBSOCKET1", "Close connection")
                 }
             }
         })
     }
 
-    fun updateLastMessage(messageDTO: MessageDTO) {
-        val updatedList = _chatList.value?.toMutableList() ?: return
-        val index = updatedList.indexOfFirst { it.id == messageDTO.chatId }
-        if (index != -1) {
-            getMyConversations()
-        }
+    override fun onCleared() {
+        super.onCleared()
+        closeWebSocket1()
+        closeWebSocket2()
     }
-
 }

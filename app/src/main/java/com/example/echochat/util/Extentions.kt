@@ -80,6 +80,12 @@ var myFriend: User?
         SharedPreferencesReManager.saveData(FRIEND_SESSION, value)
     }
 
+var tokenApi: String?
+    get() = SharedPreferencesReManager.getData(TOKEN_KEY, String::class.java)
+    set(value) {
+        SharedPreferencesReManager.saveData(TOKEN_KEY, value)
+    }
+
 var tokenUserDevice: String?
     get() = SharedPreferencesReManager.getData(TOKEN_USER_DEVICE, String::class.java)
     set(value){
