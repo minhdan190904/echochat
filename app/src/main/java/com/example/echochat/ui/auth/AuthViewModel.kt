@@ -14,9 +14,9 @@ import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.AuthRepository
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.TOKEN_KEY
-import com.example.echochat.util.TOKEN_USER_DEVICE
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
+import com.example.echochat.util.tokenUserDevice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -31,9 +31,6 @@ class AuthViewModel @Inject constructor(
 
     private val _login = MutableLiveData<UiState<ResLoginDTO>>()
     val login: LiveData<UiState<ResLoginDTO>> = _login
-
-    private val _logout = MutableLiveData<String>()
-    val logout: LiveData<String> = _logout
 
     fun register(
         email: String,
@@ -84,7 +81,7 @@ class AuthViewModel @Inject constructor(
                     Log.i("MYTAG", response.data.user.toString())
                     try {
                         val temp = authRepository.createUserDeviceToken(UserDeviceToken(
-                            token = TOKEN_USER_DEVICE,
+                            token = tokenUserDevice!!,
                             user = response.data.user,
                             timeStamp = LocalDateTime.now().toString())
                         )
@@ -103,14 +100,6 @@ class AuthViewModel @Inject constructor(
                 }
             }
         }
-    }
-    
-    
-    fun logout() {
-        SharedPreferencesReManager.clearData(TOKEN_KEY)
-        SharedPreferencesReManager.clearData(USER_SESSION)
-        Log.i("LOGOUT", "LOGOUT")
-        _logout.value = "Logout"
     }
 
     fun getSession(result: (User?) -> Unit) {

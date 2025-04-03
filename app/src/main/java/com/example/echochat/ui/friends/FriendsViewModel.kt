@@ -37,7 +37,7 @@ class FriendsViewModel @Inject constructor(
     @Named("request") private val requestRequest: Request,
     private val networkMonitor: NetworkMonitor
 
-): ViewModel() {
+) : ViewModel() {
 
     private val _usersList = MutableLiveData<List<FriendRequestDTO>>()
     val userList: LiveData<List<FriendRequestDTO>> = _usersList
@@ -73,26 +73,26 @@ class FriendsViewModel @Inject constructor(
 
     init {
         networkMonitor.isNetworkAvailable.observeForever { isNetworkAvailable ->
-            if(isNetworkAvailable){
+            if (isNetworkAvailable) {
                 connectWebSocket()
                 getMyFriendUser()
-            } else{
-                if(_usersUiState.value != UiState.HasData){
+            } else {
+                if (_usersUiState.value != UiState.HasData) {
                     _usersUiState.value = UiState.NoData
                 }
 
-                if(_usersSendUiState.value != UiState.HasData){
+                if (_usersSendUiState.value != UiState.HasData) {
                     _usersSendUiState.value = UiState.NoData
                 }
 
-                if(_usersReceiveUiState.value != UiState.HasData){
+                if (_usersReceiveUiState.value != UiState.HasData) {
                     _usersReceiveUiState.value = UiState.NoData
                 }
             }
         }
     }
 
-    private fun connectWebSocket(){
+    private fun connectWebSocket() {
         webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
@@ -100,7 +100,7 @@ class FriendsViewModel @Inject constructor(
             override fun onMessage(webSocket: WebSocket, text: String) {
                 viewModelScope.launch {
                     val data = text.split("-")
-                    if(data.contains(myUser?.id.toString())){
+                    if (data.contains(myUser?.id.toString())) {
                         getMyFriendUser()
                     }
                 }
@@ -135,26 +135,28 @@ class FriendsViewModel @Inject constructor(
                         it.requestStatus == FriendRequest.RequestStatus.PENDING && it.sender.id == myUser?.id
                     }
                 }
+
                 is NetworkResource.Error -> {
                     response.message?.let { Log.i("Error", it) }
                 }
-                is NetworkResource.NetworkException ->{
+
+                is NetworkResource.NetworkException -> {
                     response.message?.let { Log.i("Error", it) }
                 }
             }
-            if(_usersList.value.isNullOrEmpty()) {
+            if (_usersList.value.isNullOrEmpty()) {
                 _usersUiState.value = UiState.NoData
             } else {
                 _usersUiState.value = UiState.HasData
             }
 
-            if(_usersListReceive.value.isNullOrEmpty()) {
+            if (_usersListReceive.value.isNullOrEmpty()) {
                 _usersReceiveUiState.value = UiState.NoData
             } else {
                 _usersReceiveUiState.value = UiState.HasData
             }
 
-            if(_usersListSend.value.isNullOrEmpty()) {
+            if (_usersListSend.value.isNullOrEmpty()) {
                 _usersSendUiState.value = UiState.NoData
             } else {
                 _usersSendUiState.value = UiState.HasData
@@ -162,22 +164,51 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
+    fun updateFriendRequestAsync(
+        friendRequestDTO: FriendRequestDTO,
+        callback: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            val response = friendRequestRepository.sentFriendRequest(friendRequestDTO)
+            when (response) {
+                is NetworkResource.Success -> {
+                    val message =
+                        friendRequestDTO.receiver.id.toString() + "-" + friendRequestDTO.sender.id.toString() + "-" + friendRequestDTO.requestStatus
+                    listenerWebSocket(message)
+                    callback(true)
+                    Log.i("MYTAG", message)
+                }
+
+                is NetworkResource.Error -> {
+                    response.message?.let { Log.i("Error", it) }
+                    callback(false)
+                }
+
+                is NetworkResource.NetworkException -> {
+                    response.message?.let { Log.i("Error", it) }
+                    callback(false)
+                }
+            }
+        }
+    }
+
     fun updateFriendRequest(friendRequestDTO: FriendRequestDTO) {
-        friendRequestDTO.let {
-            viewModelScope.launch {
-                val response = friendRequestRepository.sentFriendRequest(friendRequestDTO)
-                when (response) {
-                    is NetworkResource.Success -> {
-                        val message = friendRequestDTO.receiver.id.toString() + "-" + friendRequestDTO.sender.id.toString() + "-" + friendRequestDTO.requestStatus
-                        listenerWebSocket(message)
-                        Log.i("MYTAG", message)
-                    }
-                    is NetworkResource.Error -> {
-                        response.message?.let { Log.i("Error", it) }
-                    }
-                    is NetworkResource.NetworkException ->{
-                        response.message?.let { Log.i("Error", it) }
-                    }
+        viewModelScope.launch {
+            val response = friendRequestRepository.sentFriendRequest(friendRequestDTO)
+            when (response) {
+                is NetworkResource.Success -> {
+                    val message =
+                        friendRequestDTO.receiver.id.toString() + "-" + friendRequestDTO.sender.id.toString() + "-" + friendRequestDTO.requestStatus
+                    listenerWebSocket(message)
+                    Log.i("MYTAG", message)
+                }
+
+                is NetworkResource.Error -> {
+                    response.message?.let { Log.i("Error", it) }
+                }
+
+                is NetworkResource.NetworkException -> {
+                    response.message?.let { Log.i("Error", it) }
                 }
             }
         }
@@ -228,5 +259,9 @@ class FriendsViewModel @Inject constructor(
 
     fun clearFriendProfile() {
         _friendRequestDTO.value = null
+    }
+
+    fun updateFriendList(updatedList: MutableList<FriendRequestDTO>) {
+        _usersList.postValue(updatedList)
     }
 }

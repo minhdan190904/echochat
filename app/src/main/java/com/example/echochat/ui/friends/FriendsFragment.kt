@@ -13,6 +13,7 @@ import com.example.echochat.databinding.FragmentFriendsBinding
 import com.example.echochat.model.FriendRequest
 import com.example.echochat.ui.home.HomeFragmentDirections
 import com.example.echochat.util.getFriend
+import com.example.echochat.util.myFriend
 import com.example.echochat.util.toast
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,9 +41,10 @@ class FriendsFragment : Fragment() {
                 if(friendRequestDTO.requestStatus != FriendRequest.RequestStatus.ACCEPTED){
                     toast("Các bạn chưa là bạn bè")
                 } else {
+                    myFriend = friendRequestDTO.getFriend()
                     friendRequestDTO.getFriend().id?.let {
                         requireActivity().findNavController(R.id.nav_host_fragment_main).navigate(
-                            HomeFragmentDirections.actionHomeFragmentToFriendProfileFragment(it)
+                            HomeFragmentDirections.actionHomeFragmentToFriendProfileFragment()
                         )
                         viewModel.clearFriendProfile()
                     }

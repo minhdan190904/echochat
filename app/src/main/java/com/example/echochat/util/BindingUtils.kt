@@ -2,12 +2,14 @@ package com.example.echochat.util
 
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import androidx.core.view.isVisible
 
 import androidx.databinding.BindingAdapter
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.example.echochat.R
+import java.util.Date
 
 object BindingUtils {
 
@@ -43,6 +45,14 @@ fun SwipeRefreshLayout.onRefresh(func: () -> Unit?) {
     }
 }
 
+@BindingAdapter("formatOnlyDate")
+fun TextView.formatOnlyDate(date: Date?) {
+    date?.let {
+        this.text = it.formatOnlyDate()
+    } ?: run {
+        this.text = "N/A"
+    }
+}
 
 @BindingAdapter("showOnLoading")
 fun View.showOnLoading(uiState: UiState<Nothing>) {

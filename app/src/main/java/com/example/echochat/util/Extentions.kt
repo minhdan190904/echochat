@@ -1,12 +1,14 @@
 package com.example.echochat.util
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.FriendRequestDTO
+import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,9 +25,18 @@ fun Fragment.toast(content: String){
     Toast.makeText(context, content, Toast.LENGTH_LONG).show()
 }
 
+fun Activity.toast(content: String){
+    Toast.makeText(this, content, Toast.LENGTH_LONG).show()
+}
 
-fun generateTime(): String {
+fun Context.toast(message: String) {
+    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+}
+
+fun generateTimeNow(): String {
+    val symbols = DateFormatSymbols(Locale.ENGLISH)
     val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
+    sdf.dateFormatSymbols = symbols
     return sdf.format(Date())
 }
 
@@ -61,5 +72,17 @@ var myUser: User?
     get() = SharedPreferencesReManager.getData(USER_SESSION, User::class.java)
     set(value) {
         SharedPreferencesReManager.saveData(USER_SESSION, value)
+    }
+
+var myFriend: User?
+    get() = SharedPreferencesReManager.getData(FRIEND_SESSION, User::class.java)
+    set(value) {
+        SharedPreferencesReManager.saveData(FRIEND_SESSION, value)
+    }
+
+var tokenUserDevice: String?
+    get() = SharedPreferencesReManager.getData(TOKEN_USER_DEVICE, String::class.java)
+    set(value){
+        SharedPreferencesReManager.saveData(TOKEN_USER_DEVICE, value)
     }
 

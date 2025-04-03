@@ -42,7 +42,7 @@
                         android:text="Chat"
                         android:textColor="@color/colorWhite"
                         android:textSize="30sp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/searchView"
@@ -116,17 +116,17 @@
             </LinearLayout>
 
             <TextView
-                showOnNoData="@{viewModel.chatUiState}"
                 android:id="@+id/tv_no_data"
+                showOnNoData="@{viewModel.chatUiState}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Không có dữ liệu"
                 android:textSize="18sp"
-                app:layout_constraintVertical_bias="0.65"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_bias="0.65" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

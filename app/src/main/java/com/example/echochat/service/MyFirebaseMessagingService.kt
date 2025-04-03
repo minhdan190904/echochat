@@ -1,4 +1,4 @@
-package com.example.echochat
+package com.example.echochat.service
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
@@ -6,12 +6,13 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Build
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
+import com.example.echochat.MainActivity
+import com.example.echochat.R
 import com.example.echochat.util.BASE_URL_GET_IMAGE
+import com.example.echochat.util.tokenUserDevice
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import java.util.concurrent.ExecutionException
@@ -30,7 +31,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val message = remoteMessage.notification?.body ?: "You have a new notification"
         val imageUrl = remoteMessage.notification?.imageUrl?.toString()
 
-        sendNotification(title, message, imageUrl)
+        if(tokenUserDevice != null && tokenUserDevice!!.isNotEmpty()){
+            sendNotification(title, message, imageUrl)
+        }
     }
 
     @SuppressLint("ObsoleteSdkInt")

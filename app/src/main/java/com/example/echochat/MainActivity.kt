@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.echochat.util.TOKEN_USER_DEVICE
+import com.example.echochat.util.toast
+import com.example.echochat.util.tokenUserDevice
 import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,7 +23,11 @@ class MainActivity : AppCompatActivity() {
                     return@addOnCompleteListener
                 }
                 val token = task.result
-                TOKEN_USER_DEVICE = token
+                if(token != null){
+                    tokenUserDevice = token
+                } else {
+                    toast("Notification not available")
+                }
                 Log.i("MYTAG", "FCM Token: $token")
             }
     }

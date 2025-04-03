@@ -19,7 +19,9 @@ class MyUserChatViewHolder private constructor(private val binding: ItemChatMeBi
                 Message.MessageType.VIDEO -> true
                 else -> false
             }
+            tvTimeSentImage.isVisible = imageMessage.isVisible
             tvMessage.isVisible = item.messageType == Message.MessageType.TEXT
+            tvTimeSentText.isVisible = tvMessage.isVisible
             executePendingBindings()
         }
 

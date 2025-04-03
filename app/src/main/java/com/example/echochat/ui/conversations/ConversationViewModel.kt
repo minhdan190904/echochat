@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewModelScope
 import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
 import com.example.echochat.model.FriendRequest
@@ -14,6 +15,7 @@ import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.ChatRepository
 import com.example.echochat.util.myUser
+import com.example.echochat.util.toast
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -31,6 +33,7 @@ class ConversationViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val httpClient: OkHttpClient,
     @Named("request") private val requestRequest: Request,
+    @Named("chat") private  val requestChat: Request,
     private val networkMonitor: NetworkMonitor
 
 ): ViewModel() {
@@ -52,8 +55,24 @@ class ConversationViewModel @Inject constructor(
     private val gson = Gson()
     private lateinit var webSocket: WebSocket
 
-    init {
+    private lateinit var webSocket2: WebSocket
 
+    init {
+        networkMonitor.isNetworkAvailable.observeForever { isAvailable ->
+            if (isAvailable) {
+                connectWebsocket()
+                getMyConversations()
+                connectWebSocket2()
+            } else {
+                if(_chatUiState.value != UiState.HasData){
+                    _chatUiState.value = UiState.NoData
+                    _friendsUiState.value = UiState.NoData
+                }
+            }
+        }
+    }
+
+    private fun connectWebsocket(){
         webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
             }
@@ -68,24 +87,12 @@ class ConversationViewModel @Inject constructor(
                 }
             }
 
-
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 viewModelScope.launch {
                     Log.i("MYTAG", t.message.toString())
                 }
             }
         })
-
-        networkMonitor.isNetworkAvailable.observeForever { isAvailable ->
-            if (isAvailable) {
-                getMyConversations()
-            } else {
-                if(_chatUiState.value != UiState.HasData){
-                    _chatUiState.value = UiState.NoData
-                    _friendsUiState.value = UiState.NoData
-                }
-            }
-        }
     }
 
     fun getMyConversations() {
@@ -117,6 +124,33 @@ class ConversationViewModel @Inject constructor(
                 _friendsUiState.value = UiState.HasData
             }
         }
+    }
+
+    private fun connectWebSocket2() {
+        webSocket2 = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                viewModelScope.launch {
+                    Log.i("WEBSOCKET", "Connect websocket")
+                }
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                viewModelScope.launch {
+                    try {
+                        val messageDTO = gson.fromJson(text, MessageDTO::class.java)
+                        updateLastMessage(messageDTO)
+                        Log.i("WEBSOCKET", "Load conversation")
+                    } catch (e: Exception) {
+                        Log.i("WEBSOCKET", "Load conversation false")
+                    }
+                }
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                viewModelScope.launch {
+                }
+            }
+        })
     }
 
     fun updateLastMessage(messageDTO: MessageDTO) {

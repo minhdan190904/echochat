@@ -14,7 +14,7 @@ import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FileRepository
 import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.repository.UserRepository
-import com.example.echochat.util.generateTime
+import com.example.echochat.util.generateTimeNow
 import com.example.echochat.util.myUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -23,7 +23,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
-    private val userRepository: UserRepository,
     private val chatRepository: ChatRepository,
     private val fileRepository: FileRepository,
     private val notificationRepository: NotificationRepository
@@ -33,7 +32,7 @@ class ChatViewModel @Inject constructor(
     private val _chat = MutableLiveData<Chat>()
     val chat: LiveData<Chat> = _chat
 
-    private val _chatUiState = MutableLiveData<UiState<Nothing>>()
+    private val _chatUiState = MutableLiveData<UiState<Nothing>>(UiState.NoData)
     val chatUiState: LiveData<UiState<Nothing>> = _chatUiState
 
     val messageText = MutableLiveData("")
@@ -48,11 +47,11 @@ class ChatViewModel @Inject constructor(
     val videoUrl: LiveData<String> = _videoUrl
 
 
-    fun getChat(chatId: Int) {
+    fun getChat(chatId: Int, isFetchOnline: Boolean) {
         this.chatId = chatId
         viewModelScope.launch {
             _chatUiState.value = UiState.Loading
-            val response = chatRepository.getChatById(chatId)
+            val response = chatRepository.getChatById(chatId, isFetchOnline)
             when (response) {
                 is NetworkResource.Success -> {
                     _chat.value = response.data
@@ -61,23 +60,6 @@ class ChatViewModel @Inject constructor(
 
                 else -> {
                     Log.i("MYTAG", "Chat bi null")
-                }
-            }
-        }
-    }
-
-    fun updateUserOnlineStatus(isOnline: Boolean) {
-        viewModelScope.launch {
-            val user = myUser!!
-            user.isOnline = isOnline
-            Log.i("MYTAG", user.toString())
-            val response = userRepository.updateUser(user)
-            when (response) {
-                is NetworkResource.Success -> {
-                    Log.i("MYTAG", "Update user online status success" + response.data)
-                }
-                else -> {
-                    Log.i("MYTAG", "Update user online status failed")
                 }
             }
         }
@@ -123,7 +105,7 @@ class ChatViewModel @Inject constructor(
                 sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.TEXT,
-                sendingTime = generateTime(),
+                sendingTime = generateTimeNow(),
                 isSeen = false
             )
 
@@ -138,7 +120,6 @@ class ChatViewModel @Inject constructor(
                     val response = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
-//                            _chat.value = response.data
                             sendNotification(response.data!!, message, "")
                         }
                         else -> {
@@ -147,7 +128,6 @@ class ChatViewModel @Inject constructor(
                     }
                 }
             }
-
         }
     }
 
@@ -157,7 +137,7 @@ class ChatViewModel @Inject constructor(
                 sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.VIDEO,
-                sendingTime = generateTime(),
+                sendingTime = generateTimeNow(),
                 isSeen = false
             )
             _messageData.value = message
@@ -187,7 +167,7 @@ class ChatViewModel @Inject constructor(
                 sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.IMAGE,
-                sendingTime = generateTime(),
+                sendingTime = generateTimeNow(),
                 isSeen = false
             )
             _messageData.value = message
@@ -209,6 +189,20 @@ class ChatViewModel @Inject constructor(
                 }
             }
 
+        }
+    }
+
+    suspend fun updateSeenLastMessage(chatId: Int){
+        viewModelScope.launch {
+            val response = chatRepository.updateSeenLastMessage(chatId)
+            when (response) {
+                is NetworkResource.Success -> {
+                    Log.i("UpdateSeenLastMessage", "Update success")
+                }
+                else -> {
+                    Log.e("UpdateSeenLastMessage", "Update failed")
+                }
+            }
         }
     }
 

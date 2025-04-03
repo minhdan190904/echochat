@@ -11,7 +11,9 @@ import com.example.echochat.databinding.ItemConversationBinding
 import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
 import com.example.echochat.util.BindingUtils.setImageUrl
+import com.example.echochat.util.hide
 import com.example.echochat.util.myUser
+import com.example.echochat.util.show
 
 class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(ChatDiffCallback()) {
 
@@ -58,6 +60,7 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
             }
 
             chat.getLastMessage()?.let { msg ->
+                Log.i("MYTAG", msg.toString())
                 if(!msg.isSeen && msg.sender?.id != myUser?.id) {
                     bind.tvUserLastMessageDate.setTypeface(null, android.graphics.Typeface.BOLD)
                     bind.tvUserLastMessage.setTypeface(null, android.graphics.Typeface.BOLD)
@@ -68,11 +71,14 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
             }
 
             bind.iconOnline.apply {
-                visibility = if (otherUser.isOnline) View.VISIBLE else View.GONE
                 if (otherUser.isOnline) {
+                    show()
                     setBackgroundColor(bind.root.resources.getColor(android.R.color.holo_green_light, null))
+                } else {
+                    hide()
                 }
             }
+
 
 
             bind.root.setOnClickListener {

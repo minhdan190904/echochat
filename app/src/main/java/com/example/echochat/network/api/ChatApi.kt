@@ -33,4 +33,9 @@ interface ChatApi {
         @Query("chatId") chatId: Int,
         @Body message: Message
     ): ResResponse<Message>
+
+    @PUT("/chats/updateSeenLastMessage")
+    suspend fun updateSeenLastMessage(
+        @Query("chatId") chatId: Int
+    ): ResResponse<Chat>
 }

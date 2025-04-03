@@ -5,9 +5,25 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.echochat.repository.AuthRepository
+import com.example.echochat.util.SharedPreferencesReManager
+import com.example.echochat.util.tokenUserDevice
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SettingViewModel: ViewModel() {
+@HiltViewModel
+class SettingViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+): ViewModel() {
+
+    private val _logout = MutableLiveData<String>()
+    val logout: LiveData<String> = _logout
 
     fun openAppNotificationSettings(context: Context) {
         val intent = Intent().apply {
@@ -31,5 +47,16 @@ class SettingViewModel: ViewModel() {
             }
         }
         context.startActivity(intent)
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            if(tokenUserDevice != null){
+                val response = authRepository.deleteByToken(tokenUserDevice!!)
+            }
+            SharedPreferencesReManager.clearAllData()
+            Log.i("LOGOUT", "LOGOUT")
+            _logout.value = "Bạn đã đăng xuất"
+        }
     }
 }

@@ -87,7 +87,7 @@ object ApiModule {
     @Singleton
     @Named("chat")
     fun provideChatRequest(): Request {
-        return Request.Builder().url("wss://${BASE_DOMAIN}/chat").build()
+        return Request.Builder().url("wss://${BASE_DOMAIN}/chat/${myUser?.id}").build()
     }
 
     @Provides

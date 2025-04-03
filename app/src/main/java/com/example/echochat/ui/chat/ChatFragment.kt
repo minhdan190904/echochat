@@ -15,6 +15,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -24,7 +25,9 @@ import com.example.echochat.model.Message
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
+import com.example.echochat.ui.conversations.ConversationViewModel
 import com.example.echochat.util.CHAT_ID
+import com.example.echochat.util.CHECK
 import com.example.echochat.util.customLastSeenChat
 import com.example.echochat.util.myUser
 import com.example.echochat.util.toast
@@ -49,13 +52,15 @@ import javax.inject.Named
 
 @AndroidEntryPoint
 class ChatFragment : Fragment() {
-    private lateinit var binding: FragmentChatBinding
+    private var _binding: FragmentChatBinding? = null
+    private val binding get() = _binding!!
     private val viewModel: ChatViewModel by viewModels()
     private val chatAdapter = ChatAdapter()
     private val chatTempList = mutableListOf<Message>()
     private val gson = Gson()
-    private lateinit var webSocket: WebSocket
+    private var webSocket: WebSocket? = null
     private var isNotInit: Boolean = false
+    private var isWebSocketConnected: Boolean = false
 
     @Inject
     lateinit var httpClient: OkHttpClient
@@ -67,25 +72,54 @@ class ChatFragment : Fragment() {
     @Inject
     lateinit var networkMonitor: NetworkMonitor
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        networkMonitor.isNetworkAvailable.observeForever {
-            if(it){
-                connectWebSocket()
-                viewModel.getChat(CHAT_ID)
-            }
-        }
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentChatBinding.inflate(inflater, container, false).apply {
+        _binding = FragmentChatBinding.inflate(inflater, container, false).apply {
             lifecycleOwner = viewLifecycleOwner
         }
         return binding.root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        CHECK = false
+        observeNetworkAndConnect()
+    }
+
+    private fun observeNetworkAndConnect() {
+        networkMonitor.isNetworkAvailable.observe(viewLifecycleOwner) { isAvailable ->
+            if (isAvailable) {
+                viewModel.getChat(CHAT_ID, CHECK)
+                if (!isWebSocketConnected) {
+                    connectWebSocket()
+                }
+            } else {
+                CHECK = true
+                disconnectWebSocket()
+            }
+        }
+    }
+
+    private fun disconnectWebSocket() {
+        webSocket?.let {
+            it.close(1000, "Network unavailable or fragment stopped")
+            isWebSocketConnected = false
+            webSocket = null
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disconnectWebSocket()
+        Log.i("MYTAG", "Fragment destroyed")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -102,27 +136,29 @@ class ChatFragment : Fragment() {
     private fun connectWebSocket() {
         webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                lifecycleScope.launch {
+                    viewModel.updateSeenLastMessage(CHAT_ID)
+                }
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
                 lifecycleScope.launch {
                     try {
                         val messageDTO = gson.fromJson(text, MessageDTO::class.java)
-                        if (messageDTO.chatId == CHAT_ID) {
+                        if (messageDTO.chatId == CHAT_ID && messageDTO.message.sender?.id != myUser?.id) {
                             chatTempList.add(messageDTO.message)
                             chatAdapter.submitList(chatTempList)
                             chatAdapter.notifyDataSetChanged()
                             binding.messagesRecyclerView.post {
                                 binding.messagesRecyclerView.scrollToPosition(chatTempList.size - 1)
                             }
+                            viewModel.updateSeenLastMessage(CHAT_ID)
                         }
                     } catch (e: Exception) {
                         Log.e("WebSocket", "JSON Parse Error: ${e.message}")
                     }
                 }
             }
-
-
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 lifecycleScope.launch {
@@ -166,8 +202,8 @@ class ChatFragment : Fragment() {
             if (isNotInit) {
                 val lastMessage = chat.getLastMessage()
                 if (lastMessage != null) {
-                    val jsonMessage = gson.toJson(chat.id?.let { MessageDTO(lastMessage, 1, CHAT_ID) })
-                    webSocket.send(jsonMessage)
+                    val jsonMessage = gson.toJson(chat.id?.let { MessageDTO(lastMessage, receiver.id!!, CHAT_ID) })
+                    webSocket?.send(jsonMessage)
                 }
             }
 
@@ -186,10 +222,12 @@ class ChatFragment : Fragment() {
                 }
             }
 
+            val receiver = myUser?.let { viewModel.chat.value?.getOtherUser(it) }
+
             if (isNotInit) {
                 if (message != null) {
-                    val jsonMessage = gson.toJson(MessageDTO(message, 1, CHAT_ID))
-                    webSocket.send(jsonMessage)
+                    val jsonMessage = gson.toJson(MessageDTO(message, receiver?.id!!, CHAT_ID))
+                    webSocket?.send(jsonMessage)
                 }
             }
             isNotInit = true
@@ -290,13 +328,6 @@ class ChatFragment : Fragment() {
                 viewModel.uploadVideo(filePart)
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewModel.updateUserOnlineStatus(false)
-        Log.i("MYTAG", "Fragment destroyed")
-        webSocket.close(1000, "Fragment destroyed")
     }
 
     private fun setClicks() {

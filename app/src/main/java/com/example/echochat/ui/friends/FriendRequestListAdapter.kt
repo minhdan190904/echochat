@@ -17,6 +17,7 @@ import com.example.echochat.util.VIEW_TYPE_HEADER
 import com.example.echochat.util.VIEW_TYPE_ITEM
 import com.example.echochat.util.getFriend
 import com.example.echochat.util.myUser
+import com.example.echochat.util.toast
 
 class FriendRequestListAdapter(
     private val viewModel: FriendsViewModel? = null,
@@ -26,7 +27,8 @@ class FriendRequestListAdapter(
     private var displayList: List<Any> = emptyList()
 
     fun submitGroupedList(friends: List<FriendRequestDTO>) {
-        groupedFriends = friends.groupBy { it.getFriend().name.first().uppercaseChar() }.toSortedMap()
+        groupedFriends =
+            friends.groupBy { it.getFriend().name.first().uppercaseChar() }.toSortedMap()
         displayList = groupedFriends.flatMap { (key, value) -> listOf(key) + value }
         submitList(displayList)
     }
@@ -69,48 +71,30 @@ class FriendRequestListAdapter(
             val otherUser = friendRequest.getFriend()
             bind.tvUserName.text = otherUser.name
             bind.imageProfile.setImageUrl(otherUser.profileImageUrl)
-            bind.tvUserStatus.text = when(friendRequest.requestStatus){
-                FriendRequest.RequestStatus.ACCEPTED -> "Hãy bắt đầu trò chuyện"
-                FriendRequest.RequestStatus.REJECTED -> "Gửi lời mời để kết bạn"
-                else -> if (friendRequest.sender.id == myUser?.id) "Đã gửi lời mời kết bạn" else "Nhận lời mời kết bạn"
-            }
-
-            bind.btnAction1.setOnClickListener {
-                val friendRequestDTOUpdate = friendRequest.copy().apply {
-                    requestStatus = FriendRequest.RequestStatus.REJECTED
-                    if (sender.id != myUser?.id) {
-                        sender = receiver.also { receiver = sender }
-                    }
-                }
-                viewModel?.updateFriendRequest(friendRequestDTOUpdate)
-            }
+            //updateUi
+            updateUI(friendRequest)
 
             bind.imageProfile.setOnClickListener {
                 viewModel?.openFriendProfile(friendRequest)
                 viewModel?.getChatId(myUser?.id!!, friendRequest.getFriend().id!!)
             }
 
-            bind.btnAction2.setOnClickListener {
-                val friendRequestDTOUpdate = friendRequest.copy().apply {
-                    requestStatus = when (friendRequest.requestStatus) {
-                        FriendRequest.RequestStatus.PENDING -> if (sender.id == myUser?.id) FriendRequest.RequestStatus.REJECTED else FriendRequest.RequestStatus.ACCEPTED
-                        FriendRequest.RequestStatus.REJECTED -> FriendRequest.RequestStatus.PENDING
-                        else -> requestStatus
-                    }
-                    if (sender.id != myUser?.id && requestStatus == FriendRequest.RequestStatus.PENDING) {
-                        sender = receiver.also { receiver = sender }
-                    }
-                    if (sender.id != myUser?.id && requestStatus == FriendRequest.RequestStatus.ACCEPTED) {
-                        sender = receiver.also { receiver = sender }
-                    }
-                }
-                viewModel?.updateFriendRequest(friendRequestDTOUpdate)
-                if(friendRequestDTOUpdate.requestStatus == FriendRequest.RequestStatus.PENDING){
-                    viewModel?.sendNotification(friendRequestDTOUpdate)
-                }
+            bind.btnAction1.setOnClickListener {
+                handleAction1(friendRequest)
             }
 
-            when(friendRequest.requestStatus){
+            bind.btnAction2.setOnClickListener {
+                handleAction2(friendRequest)
+            }
+        }
+
+        private fun updateUI(friendRequest: FriendRequestDTO) {
+            bind.tvUserStatus.text = when (friendRequest.requestStatus) {
+                FriendRequest.RequestStatus.ACCEPTED -> "Hãy bắt đầu trò chuyện"
+                FriendRequest.RequestStatus.REJECTED -> "Gửi lời mời để kết bạn"
+                else -> if (friendRequest.sender.id == myUser?.id) "Đã gửi lời mời kết bạn" else "Nhận lời mời kết bạn"
+            }
+            when (friendRequest.requestStatus) {
                 FriendRequest.RequestStatus.ACCEPTED -> {
                     bind.btnAction1.visibility = View.GONE
                     bind.btnAction2.visibility = View.GONE
@@ -123,20 +107,23 @@ class FriendRequestListAdapter(
                             visibility = View.VISIBLE
                             setIconResource(R.drawable.ic_add_friend)
                             iconTint = root.resources.getColorStateList(R.color.colorWhite, null)
-                            backgroundTintList = root.resources.getColorStateList(R.color.colorPrimary, null)
+                            backgroundTintList =
+                                root.resources.getColorStateList(R.color.colorPrimary, null)
                         }
                     }
                 }
 
                 else -> {
                     bind.apply {
-                        if(friendRequest.sender.id == myUser?.id){
+                        if (friendRequest.sender.id == myUser?.id) {
                             btnAction1.visibility = View.GONE
                             btnAction2.apply {
                                 visibility = View.VISIBLE
                                 setIconResource(R.drawable.ic_remove)
-                                iconTint = root.resources.getColorStateList(R.color.colorPrimary, null)
-                                backgroundTintList = root.resources.getColorStateList(R.color.colorWhite, null)
+                                iconTint =
+                                    root.resources.getColorStateList(R.color.colorPrimary, null)
+                                backgroundTintList =
+                                    root.resources.getColorStateList(R.color.colorWhite, null)
                             }
                         } else {
                             btnAction1.apply {
@@ -145,14 +132,78 @@ class FriendRequestListAdapter(
                             btnAction2.apply {
                                 visibility = View.VISIBLE
                                 setIconResource(R.drawable.ic_accepted)
-                                iconTint = root.resources.getColorStateList(R.color.colorWhite, null)
-                                backgroundTintList = root.resources.getColorStateList(R.color.colorPrimary, null)
+                                iconTint =
+                                    root.resources.getColorStateList(R.color.colorWhite, null)
+                                backgroundTintList =
+                                    root.resources.getColorStateList(R.color.colorPrimary, null)
                             }
                         }
                     }
                 }
             }
         }
+
+        private fun handleAction1(friendRequest: FriendRequestDTO) {
+            val friendRequestDTOUpdate = friendRequest.copy().apply {
+                requestStatus = FriendRequest.RequestStatus.REJECTED
+                if (sender.id != myUser?.id) {
+                    sender = receiver.also { receiver = sender }
+                }
+            }
+
+            //update UI temporary
+            updateUI(friendRequestDTOUpdate)
+//            updateList(friendRequestDTOUpdate)
+
+            viewModel?.updateFriendRequestAsync(friendRequestDTOUpdate) { isSuccess ->
+                if (!isSuccess) {
+                    updateUI(friendRequest)
+//                    updateList(friendRequest)
+                    bind.root.context.toast("Không thể hủy yêu cầu kết bạn")
+                }
+            }
+        }
+
+        private fun handleAction2(friendRequest: FriendRequestDTO) {
+            val friendRequestDTOUpdate = friendRequest.copy().apply {
+                requestStatus = when (friendRequest.requestStatus) {
+                    FriendRequest.RequestStatus.PENDING -> if (sender.id == myUser?.id) FriendRequest.RequestStatus.REJECTED else FriendRequest.RequestStatus.ACCEPTED
+                    FriendRequest.RequestStatus.REJECTED -> FriendRequest.RequestStatus.PENDING
+                    else -> requestStatus
+                }
+                if (sender.id != myUser?.id && requestStatus == FriendRequest.RequestStatus.PENDING) {
+                    sender = receiver.also { receiver = sender }
+                }
+                if (sender.id != myUser?.id && requestStatus == FriendRequest.RequestStatus.ACCEPTED) {
+                    sender = receiver.also { receiver = sender }
+                }
+            }
+
+            //update UI temporary
+            updateUI(friendRequestDTOUpdate)
+//            updateList(friendRequestDTOUpdate)
+
+            viewModel?.updateFriendRequestAsync(friendRequestDTOUpdate) { isSuccess ->
+                if (!isSuccess) {
+                    updateUI(friendRequest)
+//                    updateList(friendRequest)
+                    bind.root.context.toast("Không thể thực hiện thao tác")
+                } else if (friendRequestDTOUpdate.requestStatus == FriendRequest.RequestStatus.PENDING) {
+                    viewModel?.sendNotification(friendRequestDTOUpdate)
+                }
+            }
+        }
+
+        private fun updateList(updatedRequest: FriendRequestDTO) {
+            val currentList = viewModel?.userList?.value?.toMutableList() ?: mutableListOf()
+            val index =
+                currentList.indexOfFirst { it.getFriend().id == updatedRequest.getFriend().id }
+            if (index != -1) {
+                currentList[index] = updatedRequest
+                viewModel?.updateFriendList(currentList)
+            }
+        }
+
     }
 
     class FriendRequestDiffCallback : DiffUtil.ItemCallback<Any>() {

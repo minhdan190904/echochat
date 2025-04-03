@@ -19,8 +19,10 @@ import com.example.echochat.model.User
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.LocaleHelper
 import com.example.echochat.util.USER_SESSION
+import com.example.echochat.util.toast
+import dagger.hilt.android.AndroidEntryPoint
 
-
+@AndroidEntryPoint
 class SettingsFragment : Fragment() {
 
     private lateinit var binding: FragmentSettingsBinding
@@ -48,24 +50,23 @@ class SettingsFragment : Fragment() {
         }
 
         binding.tvLogout.setOnClickListener {
-            SharedPreferencesReManager.clearAllData()
-//            requireActivity().findNavController(R.id.nav_host_fragment_main)
-//                .navigate(
-//                R.id.action_homeFragment_to_loginFragment,
-//                null,
-//                NavOptions.Builder()
-//                    .setPopUpTo(R.id.main_navigation, true)
-//                    .build()
-//            )
-            requireActivity().finish()
-            requireActivity().startActivity(Intent(requireContext(), MainActivity::class.java))
-
+            viewModel.logout()
         }
 
         binding.changeLanguageLayout.setOnClickListener {
             showPopupMenu(it)
         }
 
+        observe()
+
+    }
+
+    private fun observe() {
+        viewModel.logout.observe(viewLifecycleOwner) {
+            toast(it)
+            requireActivity().finish()
+            requireActivity().startActivity(Intent(requireContext(), MainActivity::class.java))
+        }
     }
 
     private fun showPopupMenu(view: View){

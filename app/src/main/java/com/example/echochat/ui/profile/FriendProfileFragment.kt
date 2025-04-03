@@ -12,6 +12,7 @@ import com.example.echochat.databinding.FragmentFriendProfileBinding
 import com.example.echochat.ui.chat.ChatActivity
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.intentActivity
+import com.example.echochat.util.myFriend
 import com.example.echochat.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,28 +20,23 @@ import dagger.hilt.android.AndroidEntryPoint
 class FriendProfileFragment : Fragment() {
 
     private lateinit var binding: FragmentFriendProfileBinding
-    private val viewModel: FriendProfileViewModel by viewModels()
-    private val arg: FriendProfileFragmentArgs by navArgs()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel.getFriendUser(arg.friendId)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentFriendProfileBinding.inflate(inflater, container, false)
+        binding.lifecycleOwner = viewLifecycleOwner
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observeValues()
         binding.imgBack.setOnClickListener {
             findNavController().popBackStack()
         }
+
+        binding.user = myFriend
 
         binding.btnChat.setOnClickListener {
             if(CHAT_ID != -1){
@@ -50,12 +46,4 @@ class FriendProfileFragment : Fragment() {
             }
         }
     }
-
-    private fun observeValues() {
-        viewModel.friendUser.observe(viewLifecycleOwner) { user ->
-            binding.user = user
-        }
-
-    }
-
 }

@@ -55,10 +55,6 @@
         android:name="com.example.echochat.ui.profile.FriendProfileFragment"
         android:label="fragment_friend_profile"
         tools:layout="@layout/fragment_friend_profile" >
-        <argument
-            android:name="friendId"
-            app:argType="integer"
-            android:defaultValue="0"/>
     </fragment>
 
 </navigation>

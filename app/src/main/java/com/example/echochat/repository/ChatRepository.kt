@@ -47,27 +47,32 @@ class ChatRepository @Inject constructor(
     }
 
     suspend fun fetchChatIdByUserIds(user1Id: Int, user2Id: Int): NetworkResource<Int> {
-        return try {
-            val chatIdApi = chatApi.fetchChatIdByUserIds(user1Id, user2Id)
-            NetworkResource.Success(chatIdApi.data)
-        } catch (ex: HttpException) {
-            NetworkResource.Error(
-                message = when (ex.code()) {
-                    409 -> "Email already exists"
-                    500 -> "Internal Server Error. Please try again later."
-                    else -> "Server error: ${ex.message()}"
-                }, responseCode = ex.code()
-            )
-        } catch (ex: IOException) {
-            NetworkResource.NetworkException("Network error. Please check your connection.")
-        } catch (ex: Exception) {
-            NetworkResource.Error(ex.message ?: "Unexpected error")
+        val chat = chatList.find { user2Id == it.getOtherUser(myUser!!).id }
+        return if (chat != null) {
+            NetworkResource.Success(chat.id!!)
+        } else {
+            return try {
+                val chatIdApi = chatApi.fetchChatIdByUserIds(user1Id, user2Id)
+                NetworkResource.Success(chatIdApi.data)
+            } catch (ex: HttpException) {
+                NetworkResource.Error(
+                    message = when (ex.code()) {
+                        409 -> "Email already exists"
+                        500 -> "Internal Server Error. Please try again later."
+                        else -> "Server error: ${ex.message()}"
+                    }, responseCode = ex.code()
+                )
+            } catch (ex: IOException) {
+                NetworkResource.NetworkException("Network error. Please check your connection.")
+            } catch (ex: Exception) {
+                NetworkResource.Error(ex.message ?: "Unexpected error")
+            }
         }
     }
 
-    suspend fun getChatById(chatId: Int): NetworkResource<Chat?> {
+    suspend fun getChatById(chatId: Int, isFetchOnline: Boolean): NetworkResource<Chat?> {
         val chat = chatList.find { it.id == chatId }
-        return if (chat != null) {
+        return if (chat != null && !isFetchOnline) {
             NetworkResource.Success(chat)
         } else {
             try {
@@ -90,17 +95,42 @@ class ChatRepository @Inject constructor(
     }
 
     suspend fun sendMessage(chatId: Int, message: Message): NetworkResource<Chat?> {
-        val chat = chatApi.addMessage(chatId, message).data
-        return NetworkResource.Success(chat)
+        return try {
+            val chat = chatApi.addMessage(chatId, message)
+            NetworkResource.Success(chat.data)
+        } catch (ex: HttpException) {
+            NetworkResource.Error(
+                message = when (ex.code()) {
+                    404 -> "Not found"
+                    400 -> "Sending message error"
+                    500 -> "Internal Server Error. Please try again later."
+                    else -> "Server error: ${ex.message()}"
+                }, responseCode = ex.code()
+            )
+        } catch (ex: IOException) {
+            NetworkResource.NetworkException("Network error. Please check your connection.")
+        } catch (ex: Exception) {
+            NetworkResource.Error(ex.message ?: "Unexpected error")
+        }
     }
 
-    suspend fun addMessage(chatId: Int, message: Message): NetworkResource<Chat?> {
-        val chat = chatList.find { it.id == chatId }
-        val messageRequest = chatApi.sendMessage(chatId, message).data
-        chat?.let {
-            it.messageList.add(message)
-            return NetworkResource.Success(it)
+    suspend fun updateSeenLastMessage(chatId: Int): NetworkResource<Chat>{
+        return try {
+            val chat = chatApi.updateSeenLastMessage(chatId)
+            NetworkResource.Success(chat.data)
+        } catch (ex: HttpException) {
+            NetworkResource.Error(
+                message = when (ex.code()) {
+                    404 -> "Not found"
+                    400 -> "Update message error"
+                    500 -> "Internal Server Error. Please try again later."
+                    else -> "Server error: ${ex.message()}"
+                }, responseCode = ex.code()
+            )
+        } catch (ex: IOException) {
+            NetworkResource.NetworkException("Network error. Please check your connection.")
+        } catch (ex: Exception) {
+            NetworkResource.Error(ex.message ?: "Unexpected error")
         }
-        return NetworkResource.Error("Chat không tồn tại")
     }
 }
