@@ -11,7 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.findNavController
 import com.example.echochat.MainActivity
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentSettingsBinding
@@ -19,6 +21,9 @@ import com.example.echochat.model.User
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.LocaleHelper
 import com.example.echochat.util.USER_SESSION
+import com.example.echochat.util.UiState
+import com.example.echochat.util.hide
+import com.example.echochat.util.show
 import com.example.echochat.util.toast
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -57,16 +62,41 @@ class SettingsFragment : Fragment() {
             showPopupMenu(it)
         }
 
-        observe()
+        observer()
 
     }
 
-    private fun observe() {
-        viewModel.logout.observe(viewLifecycleOwner) {
-            toast(it)
-            requireActivity().finish()
-            requireActivity().startActivity(Intent(requireContext(), MainActivity::class.java))
+    private fun observer() {
+        viewModel.logout.observe(viewLifecycleOwner) { state ->
+            when(state){
+                is UiState.Loading -> {
+                    binding.progressBarLoadNotification.show()
+                    binding.blockingView.show()
+                }
+
+                is UiState.Success-> {
+                    binding.progressBarLoadNotification.hide()
+                    binding.blockingView.hide()
+                    toast(state.data)
+                    logoutAction()
+                }
+
+                is UiState.Failure -> {
+                    binding.progressBarLoadNotification.hide()
+                    binding.blockingView.hide()
+                    toast(state.error.toString())
+                    logoutAction()
+                }
+
+                else -> {}
+            }
+
         }
+    }
+
+    private fun logoutAction() {
+        requireActivity().finish()
+        requireActivity().startActivity(Intent(requireContext(), MainActivity::class.java))
     }
 
     private fun showPopupMenu(view: View){

@@ -11,7 +11,7 @@
             type="com.example.echochat.model.User" />
     </data>
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/background_color_gradient">
@@ -233,6 +233,27 @@
 
         </LinearLayout>
 
-    </FrameLayout>
+        <View
+            android:id="@+id/blockingView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80FFFFFF"
+            android:clickable="true"
+            android:focusable="true"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progressBarLoadNotification"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:indeterminateTint="@color/colorPrimary"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </layout>

@@ -68,7 +68,7 @@
             android:fontFamily="@font/sf_pro_display_regular"
             app:layout_constraintEnd_toStartOf="@+id/tv_message"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="12dp"/>
 
 
         <com.google.android.material.imageview.ShapeableImageView
@@ -103,7 +103,7 @@
             android:fontFamily="@font/sf_pro_display_regular"
             app:layout_constraintEnd_toStartOf="@id/image_message"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginBottom="12dp"/>
 
 
         <androidx.constraintlayout.widget.Barrier

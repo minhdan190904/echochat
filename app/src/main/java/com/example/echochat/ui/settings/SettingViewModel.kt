@@ -10,8 +10,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.AuthRepository
 import com.example.echochat.util.SharedPreferencesReManager
+import com.example.echochat.util.UiState
 import com.example.echochat.util.tokenUserDevice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -22,8 +24,8 @@ class SettingViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ): ViewModel() {
 
-    private val _logout = MutableLiveData<String>()
-    val logout: LiveData<String> = _logout
+    private val _logout = MutableLiveData<UiState<String>>()
+    val logout: LiveData<UiState<String>> = _logout
 
     fun openAppNotificationSettings(context: Context) {
         val intent = Intent().apply {
@@ -51,12 +53,22 @@ class SettingViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            if(tokenUserDevice != null){
-                val response = authRepository.deleteByToken(tokenUserDevice!!)
+            if(tokenUserDevice == null){
+                tokenUserDevice = ""
+            }
+            _logout.value = UiState.Loading
+            val response = authRepository.deleteByToken(tokenUserDevice!!)
+            when (response) {
+
+                is NetworkResource.Success -> {
+                    _logout.value = UiState.Success("Logout successful")
+                }
+
+                else -> {
+                    _logout.value = UiState.Failure("Logout successful, but don't delete token")
+                }
             }
             SharedPreferencesReManager.clearAllData()
-            Log.i("LOGOUT", "LOGOUT")
-            _logout.value = "Bạn đã đăng xuất"
         }
     }
 }

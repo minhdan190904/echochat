@@ -12,4 +12,5 @@
     <string name="last_message_other_image">%s: Đã gửi một ảnh.</string>
     <!-- TODO: Xóa hoặc thay đổi văn bản mẫu này -->
     <string name="hello_blank_fragment">Xin chào, fragment trống</string>
+    <string name="notification_not_available">Notification not available</string>
 </resources>

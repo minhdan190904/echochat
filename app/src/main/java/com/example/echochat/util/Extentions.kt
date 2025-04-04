@@ -8,6 +8,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.FriendRequestDTO
+import com.example.echochat.network.NetworkResource
+import retrofit2.HttpException
+import java.io.IOException
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -65,6 +68,27 @@ fun Date.customLastSeenChat(): String {
         in 60000..3600000 - 1 -> "${duration/60000} phút trước"
         in 3600000..86400000 -1 -> "${duration/3600000} giờ trước"
         else -> this.formatOnlyDate()
+    }
+}
+
+suspend fun <T> handleNetworkCall(
+    call: suspend () -> T,
+    customErrorMessages: Map<Int, String> = emptyMap()
+): NetworkResource<T> {
+    return try {
+        val response = call()
+        NetworkResource.Success(response)
+    } catch (ex: HttpException) {
+        val defaultMessages = mapOf(
+            404 to "Not found",
+            500 to "Internal Server Error. Please try again later."
+        )
+        val errorMessage = customErrorMessages[ex.code()] ?: defaultMessages[ex.code()] ?: "Server error: ${ex.message()}"
+        NetworkResource.Error(message = errorMessage, responseCode = ex.code())
+    } catch (ex: IOException) {
+        NetworkResource.NetworkException("Network error. Please check your connection.")
+    } catch (ex: Exception) {
+        NetworkResource.Error(ex.message ?: "Unexpected error")
     }
 }
 

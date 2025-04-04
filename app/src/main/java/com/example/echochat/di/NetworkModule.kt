@@ -16,5 +16,4 @@ object NetworkModule {
     fun provideNetworkMonitor(application: Application): NetworkMonitor {
         return NetworkMonitor(application)
     }
-
 }

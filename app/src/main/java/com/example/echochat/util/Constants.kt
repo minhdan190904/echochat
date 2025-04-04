@@ -1,7 +1,7 @@
 package com.example.echochat.util
 
 var CHAT_ID = -1
-const val BASE_DOMAIN = "4dc6-2001-ee0-1a40-82d5-a97c-b406-9ba9-d2bb.ngrok-free.app"
+const val BASE_DOMAIN = "9b83-2001-ee0-1a35-1bc4-c5fd-cb91-8af-ff5b.ngrok-free.app"
 const val BASE_URL_GET_IMAGE = "https://${BASE_DOMAIN}/storage/"
 const val LOCAL_SHARED_PREF = "app_prefs"
 const val TOKEN_KEY = "token_key"
