@@ -18,10 +18,12 @@ import com.example.echochat.MainActivity
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentSettingsBinding
 import com.example.echochat.model.User
+import com.example.echochat.util.ENGLISH_LANGUAGE
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.LocaleHelper
 import com.example.echochat.util.USER_SESSION
 import com.example.echochat.util.UiState
+import com.example.echochat.util.VIETNAMESE_LANGUAGE
 import com.example.echochat.util.hide
 import com.example.echochat.util.show
 import com.example.echochat.util.toast
@@ -74,17 +76,17 @@ class SettingsFragment : Fragment() {
                     binding.blockingView.show()
                 }
 
-                is UiState.Success-> {
+                is UiState.HasData -> {
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
-                    toast(state.data)
+                    toast(getString(R.string.log_out_successful))
                     logoutAction()
                 }
 
-                is UiState.Failure -> {
+                is UiState.NoData -> {
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
-                    toast(state.error.toString())
+                    toast(getString(R.string.log_out_successful_but_cannot_delete_token))
                     logoutAction()
                 }
 
@@ -106,13 +108,13 @@ class SettingsFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener { item: MenuItem ->
             when (item.itemId) {
                 R.id.vietnamese -> {
-                    LocaleHelper.setLocale("vi")
+                    LocaleHelper.setLocale(VIETNAMESE_LANGUAGE)
                     val intent = requireActivity().intent
                     requireActivity().finish()
                     requireActivity().startActivity(intent)
                 }
                 else -> {
-                    LocaleHelper.setLocale("en")
+                    LocaleHelper.setLocale(ENGLISH_LANGUAGE)
                     val intent = requireActivity().intent
                     requireActivity().finish()
                     requireActivity().startActivity(intent)

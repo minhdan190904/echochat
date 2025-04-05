@@ -24,8 +24,8 @@ class SettingViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ): ViewModel() {
 
-    private val _logout = MutableLiveData<UiState<String>>()
-    val logout: LiveData<UiState<String>> = _logout
+    private val _logout = MutableLiveData<UiState<Nothing>>()
+    val logout: LiveData<UiState<Nothing>> = _logout
 
     fun openAppNotificationSettings(context: Context) {
         val intent = Intent().apply {
@@ -61,11 +61,11 @@ class SettingViewModel @Inject constructor(
             when (response) {
 
                 is NetworkResource.Success -> {
-                    _logout.value = UiState.Success("Logout successful")
+                    _logout.value = UiState.HasData
                 }
 
                 else -> {
-                    _logout.value = UiState.Failure("Logout successful, but don't delete token")
+                    _logout.value = UiState.NoData
                 }
             }
             SharedPreferencesReManager.clearAllData()

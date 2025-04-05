@@ -76,12 +76,12 @@ class UpdateProfileFragment : Fragment() {
                 when {
                     email.isEmpty() -> {
                         binding.email.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etEmail.error = "Email không được để trống"
+                        binding.etEmail.error = getString(R.string.email_must_not_be_empty)
                     }
 
                     !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
                         binding.email.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etEmail.error = "Email không hợp lệ"
+                        binding.etEmail.error = getString(R.string.email_is_not_valid)
                     }
 
                     else -> {
@@ -97,7 +97,7 @@ class UpdateProfileFragment : Fragment() {
                 when {
                     name.isEmpty() -> {
                         binding.name.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etFullName.error = "Tên không được để trống"
+                        binding.etFullName.error = getString(R.string.name_must_not_be_empty)
                     }
 
                     else -> {

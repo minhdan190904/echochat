@@ -21,7 +21,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:drawablePadding="5dp"
-                android:text="Chọn ảnh từ camera"
+                android:text="@string/choose_image_from_camera"
                 android:textSize="20sp"
                 app:drawableStartCompat="@drawable/ic_camera"
                 app:drawableTint="@color/colorPrimary" />
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:padding="10dp"
                 android:drawablePadding="5dp"
-                android:text="Chọn ảnh từ thư viện"
+                android:text="@string/choose_image_from_gallery"
                 android:textSize="20sp"
                 app:drawableStartCompat="@drawable/ic_gallery"
                 app:drawableTint="@color/colorPrimary" />

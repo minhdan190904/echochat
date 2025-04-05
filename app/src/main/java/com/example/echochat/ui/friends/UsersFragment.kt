@@ -70,8 +70,7 @@ class UsersFragment : Fragment() {
                     binding.swipeRefreshLayout.isRefreshing = false
                 }
 
-                is UiState.Failure -> TODO()
-                is UiState.Success -> TODO()
+                else -> {}
             }
         }
     }

@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewModelScope
 import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
 import com.example.echochat.model.FriendRequest
@@ -15,7 +14,6 @@ import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.ChatRepository
 import com.example.echochat.util.myUser
-import com.example.echochat.util.toast
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -54,7 +52,6 @@ class ConversationViewModel @Inject constructor(
 
     private val gson = Gson()
     private var webSocket: WebSocket? = null
-
     private var webSocket2: WebSocket? = null
 
     init {
@@ -72,7 +69,6 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
-
     private fun closeWebSocket1() {
         webSocket?.close(1000, "ViewModel cleared")
         webSocket = null
@@ -83,7 +79,7 @@ class ConversationViewModel @Inject constructor(
         webSocket2 = null
     }
 
-    fun connectWebsocket(){
+    private fun connectWebsocket(){
         closeWebSocket1()
         webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -138,7 +134,7 @@ class ConversationViewModel @Inject constructor(
         }
     }
 
-    fun connectWebSocket2() {
+    private fun connectWebSocket2() {
         closeWebSocket2()
         webSocket2 = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {

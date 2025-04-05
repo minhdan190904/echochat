@@ -39,7 +39,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:padding="10dp"
-                        android:text="Chat"
+                        android:text="@string/messages"
                         android:textColor="@color/colorWhite"
                         android:textSize="30sp"
                         android:textStyle="bold" />
@@ -120,7 +120,7 @@
                 showOnNoData="@{viewModel.chatUiState}"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Không có dữ liệu"
+                android:text="@string/have_not_data"
                 android:textSize="18sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"

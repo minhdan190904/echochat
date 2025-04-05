@@ -1,8 +1,8 @@
 package com.example.echochat.ui.auth
 
-import android.content.Intent
-import android.net.Uri
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Html
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
@@ -17,8 +17,11 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentRegisterBinding
+import com.example.echochat.util.PRIVACY_URL
+import com.example.echochat.util.TERMS_URL
 import com.example.echochat.util.UiState
 import com.example.echochat.util.hide
+import com.example.echochat.util.intentUrl
 import com.example.echochat.util.show
 import com.example.echochat.util.toast
 import com.google.android.material.textfield.TextInputLayout
@@ -59,12 +62,12 @@ class RegisterFragment : Fragment() {
                 when {
                     email.isEmpty() -> {
                         binding.email.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etEmail.error = "Email không được để trống"
+                        binding.etEmail.error = getString(R.string.email_must_not_be_empty)
                     }
 
                     !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
                         binding.email.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etEmail.error = "Email không hợp lệ"
+                        binding.etEmail.error = getString(R.string.email_is_not_valid)
                     }
 
                     else -> {
@@ -80,7 +83,7 @@ class RegisterFragment : Fragment() {
                 when {
                     name.isEmpty() -> {
                         binding.name.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etFullName.error = "Tên không được để trống"
+                        binding.etFullName.error = getString(R.string.name_must_not_be_empty)
                     }
 
                     else -> {
@@ -96,12 +99,12 @@ class RegisterFragment : Fragment() {
                 when {
                     password.isEmpty() -> {
                         binding.password.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etPassword.error = "Mật khẩu không được để trống"
+                        binding.etPassword.error = getString(R.string.password_must_not_be_empty)
                     }
 
                     password.length < 6 -> {
                         binding.password.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etPassword.error = "Mật khẩu phải có ít nhất 6 ký tự"
+                        binding.etPassword.error = getString(R.string.password_valid_condition)
                     }
 
                     else -> {
@@ -118,43 +121,77 @@ class RegisterFragment : Fragment() {
 
             observer()
 
-            setUpSpannable()
+            setUpSpannableCheckBox()
+            setUpSpannableSignInText()
         }
     }
 
-    private fun setUpSpannable(){
+    private fun setUpSpannableSignInText() {
+        val fullText = Html.fromHtml(getString(R.string.had_a_account_sign_in), Html.FROM_HTML_MODE_LEGACY).toString()
+        val clickableText = getString(R.string.sign_in)
+        val spannableString = SpannableString(fullText)
+        val startIndex = fullText.indexOf(clickableText)
+        val endIndex = startIndex + clickableText.length
+        if (startIndex >= 0) {
+            spannableString.setSpan(
+                object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        findNavController().popBackStack()
+                    }
+                },
+                startIndex,
+                endIndex,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
 
-        //span for check box
-        val spanCheckBox = SpannableString("I agree to Terms and Privacy Policy")
-        spanCheckBox.setSpan(object : ClickableSpan() {
-            override fun onClick(widget: View) {
-                val url = "https://telegram.org/tos"
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(intent)
-            }
-        }, 11, 16, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        spanCheckBox.setSpan(object : ClickableSpan() {
-            override fun onClick(widget: View) {
-                val url = "https://telegram.org/privacy?setln=fa"
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                startActivity(intent)
-            }
-        }, 21, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        binding.tvTermsAndPolicy.text = spanCheckBox
-        binding.tvTermsAndPolicy.movementMethod = LinkMovementMethod.getInstance()
-
-        //span for text view
-        val spanTextView = SpannableString("Had a account? Sign in")
-        spanTextView.setSpan(object : ClickableSpan() {
-            override fun onClick(widget: View) {
-                findNavController().popBackStack()
-            }
-        }, 15, 22, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        binding.btnSignIn.text = spanTextView
+        binding.btnSignIn.text = spannableString
         binding.btnSignIn.movementMethod = LinkMovementMethod.getInstance()
+        binding.btnSignIn.highlightColor = Color.TRANSPARENT
+    }
+
+    private fun setUpSpannableCheckBox() {
+        val fullText = Html.fromHtml(getString(R.string.terms_and_policy), Html.FROM_HTML_MODE_LEGACY).toString()
+        val termsText = getString(R.string.terms)
+        val privacyText = getString(R.string.privacy_policy)
+
+        val spannableString = SpannableString(fullText)
+
+        val termsStart = fullText.indexOf(termsText)
+        val termsEnd = termsStart + termsText.length
+
+        val privacyStart = fullText.indexOf(privacyText)
+        val privacyEnd = privacyStart + privacyText.length
+
+        if (termsStart >= 0) {
+            spannableString.setSpan(
+                object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        intentUrl(TERMS_URL)
+                    }
+                },
+                termsStart,
+                termsEnd,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+
+        if (privacyStart >= 0) {
+            spannableString.setSpan(
+                object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        intentUrl(PRIVACY_URL)
+                    }
+                },
+                privacyStart,
+                privacyEnd,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+
+        binding.tvTermsAndPolicy.text = spannableString
+        binding.tvTermsAndPolicy.movementMethod = LinkMovementMethod.getInstance()
+        binding.tvTermsAndPolicy.highlightColor = Color.TRANSPARENT
     }
 
     private fun getName(): String {
@@ -184,28 +221,24 @@ class RegisterFragment : Fragment() {
         viewModel.register.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is UiState.Loading -> {
-                    binding.btnConfirmSignUp.text = ""
                     binding.progressBarLoadNotification.show()
                     binding.blockingView.show()
                 }
 
                 is UiState.Failure -> {
-                    binding.btnConfirmSignUp.text = "Đăng ký"
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
-                    toast(state.error ?: "Lỗi đăng ký")
+                    toast(state.error ?: getString(R.string.register_failed))
                 }
 
                 is UiState.Success -> {
-                    binding.btnConfirmSignUp.text = "Đăng ký"
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
-                    toast("Đăng ký thành công")
+                    toast(getString(R.string.register_successful))
                     findNavController().popBackStack()
                 }
 
-                UiState.HasData -> TODO()
-                UiState.NoData -> TODO()
+                else -> {}
             }
         }
     }

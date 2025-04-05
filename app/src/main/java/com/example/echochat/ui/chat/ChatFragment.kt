@@ -25,10 +25,9 @@ import com.example.echochat.model.Message
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
-import com.example.echochat.ui.conversations.ConversationViewModel
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.CHECK
-import com.example.echochat.util.customLastSeenChat
+import com.example.echochat.util.formatOnlyDate
 import com.example.echochat.util.myUser
 import com.example.echochat.util.toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -215,7 +214,6 @@ class ChatFragment : Fragment() {
         viewModel.messageData.observe(viewLifecycleOwner) { message->
             chatTempList.add(message)
             chatAdapter.submitList(chatTempList)
-//            chatAdapter.notifyDataSetChanged()
             if (chatTempList.isNotEmpty()) {
                 binding.messagesRecyclerView.post {
                     binding.messagesRecyclerView.scrollToPosition(chatTempList.size - 1)
@@ -344,5 +342,14 @@ class ChatFragment : Fragment() {
         binding.toolbar.tvUserLastSeen.text =
             if (receiver.isOnline) getString(R.string.text_active_now)
             else getString(R.string.last_seen_time, lastSeenTime?.customLastSeenChat())
+    }
+
+    private fun Date.customLastSeenChat(): String {
+        return when (val duration = Date().time - this.time - 3600 * 1000 * 7) {
+            in 0..<60000 -> getString(R.string.few_seconds_ago)
+            in 60000..<3600000 -> getString(R.string.minutes_ago, duration / 60000)
+            in 3600000..<86400000 -> getString(R.string.hours_ago, duration / 3600000)
+            else -> this.formatOnlyDate()
+        }
     }
 }

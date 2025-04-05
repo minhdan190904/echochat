@@ -76,7 +76,9 @@ class FriendRequestListAdapter(
 
             bind.imageProfile.setOnClickListener {
                 viewModel?.openFriendProfile(friendRequest)
-                viewModel?.getChatId(myUser?.id!!, friendRequest.getFriend().id!!)
+                if(friendRequest.requestStatus == FriendRequest.RequestStatus.ACCEPTED) {
+                    viewModel?.getChatId(myUser?.id!!, friendRequest.getFriend().id!!)
+                }
             }
 
             bind.btnAction1.setOnClickListener {
@@ -89,10 +91,13 @@ class FriendRequestListAdapter(
         }
 
         private fun updateUI(friendRequest: FriendRequestDTO) {
+            val context = bind.root.context
             bind.tvUserStatus.text = when (friendRequest.requestStatus) {
-                FriendRequest.RequestStatus.ACCEPTED -> "Hãy bắt đầu trò chuyện"
-                FriendRequest.RequestStatus.REJECTED -> "Gửi lời mời để kết bạn"
-                else -> if (friendRequest.sender.id == myUser?.id) "Đã gửi lời mời kết bạn" else "Nhận lời mời kết bạn"
+                FriendRequest.RequestStatus.ACCEPTED -> context.getString(R.string.let_start_conversation)
+                FriendRequest.RequestStatus.REJECTED -> context.getString(R.string.send_friend_request)
+                else -> if (friendRequest.sender.id == myUser?.id) context.getString(R.string.sent_friend_request) else context.getString(
+                    R.string.received_friend_request
+                )
             }
             when (friendRequest.requestStatus) {
                 FriendRequest.RequestStatus.ACCEPTED -> {
@@ -159,7 +164,7 @@ class FriendRequestListAdapter(
                 if (!isSuccess) {
                     updateUI(friendRequest)
 //                    updateList(friendRequest)
-                    bind.root.context.toast("Không thể hủy yêu cầu kết bạn")
+                    bind.root.context.apply { toast(getString(R.string.can_not_reject_friend_request)) }
                 }
             }
         }
@@ -187,7 +192,7 @@ class FriendRequestListAdapter(
                 if (!isSuccess) {
                     updateUI(friendRequest)
 //                    updateList(friendRequest)
-                    bind.root.context.toast("Không thể thực hiện thao tác")
+                    bind.root.context.apply { toast(getString(R.string.can_not_action)) }
                 } else if (friendRequestDTOUpdate.requestStatus == FriendRequest.RequestStatus.PENDING) {
                     viewModel?.sendNotification(friendRequestDTOUpdate)
                 }

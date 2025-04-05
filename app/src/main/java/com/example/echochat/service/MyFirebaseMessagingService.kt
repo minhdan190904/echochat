@@ -27,8 +27,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
 
-        val title = remoteMessage.notification?.title ?: "New Message"
-        val message = remoteMessage.notification?.body ?: "You have a new notification"
+        val title = remoteMessage.notification?.title ?: getString(R.string.new_message)
+        val message = remoteMessage.notification?.body ?: getString(R.string.you_have_a_new_notification)
         val imageUrl = remoteMessage.notification?.imageUrl?.toString()
 
         if(tokenUserDevice != null && tokenUserDevice!!.isNotEmpty()){

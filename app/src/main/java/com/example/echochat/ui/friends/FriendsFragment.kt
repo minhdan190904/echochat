@@ -39,7 +39,7 @@ class FriendsFragment : Fragment() {
         viewModel.friendRequestDTO.observe(viewLifecycleOwner) { friendRequestDTO ->
             if(friendRequestDTO != null){
                 if(friendRequestDTO.requestStatus != FriendRequest.RequestStatus.ACCEPTED){
-                    toast("Các bạn chưa là bạn bè")
+                    toast(getString(R.string.we_are_not_friend, friendRequestDTO.getFriend().name))
                 } else {
                     myFriend = friendRequestDTO.getFriend()
                     friendRequestDTO.getFriend().id?.let {
@@ -55,9 +55,9 @@ class FriendsFragment : Fragment() {
         binding.viewPager2.adapter = FragmentPageFriendsAdapter(childFragmentManager, lifecycle)
 
         binding.apply {
-            tabIndicator.addTab(tabIndicator.newTab().setText("USERS"))
-            tabIndicator.addTab(tabIndicator.newTab().setText("RECEIVED"))
-            tabIndicator.addTab(tabIndicator.newTab().setText("SENT"))
+            tabIndicator.addTab(tabIndicator.newTab().setText(getString(R.string.users)))
+            tabIndicator.addTab(tabIndicator.newTab().setText(getString(R.string.received)))
+            tabIndicator.addTab(tabIndicator.newTab().setText(getString(R.string.sent)))
         }
 
         binding.tabIndicator.addOnTabSelectedListener(object: TabLayout.OnTabSelectedListener{

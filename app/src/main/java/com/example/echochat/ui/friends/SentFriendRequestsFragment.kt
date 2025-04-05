@@ -65,8 +65,7 @@ class SentFriendRequestsFragment : Fragment() {
                     binding.tvNoData.visibility = View.GONE
                 }
 
-                is UiState.Failure -> TODO()
-                is UiState.Success -> TODO()
+                else -> {}
             }
         }
 

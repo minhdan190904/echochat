@@ -3,6 +3,7 @@ package com.example.echochat.util
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -62,13 +63,9 @@ fun FriendRequestDTO.getFriend(): User {
     return if (myUser?.id == this.sender.id) this.receiver else this.sender
 }
 
-fun Date.customLastSeenChat(): String {
-    return when(val duration = Date().time - this.time - 3600*1000*7){
-        in 0..60000 - 1 -> "Vừa xong"
-        in 60000..3600000 - 1 -> "${duration/60000} phút trước"
-        in 3600000..86400000 -1 -> "${duration/3600000} giờ trước"
-        else -> this.formatOnlyDate()
-    }
+fun Fragment.intentUrl(url: String) {
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    startActivity(intent)
 }
 
 suspend fun <T> handleNetworkCall(

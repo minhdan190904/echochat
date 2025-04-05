@@ -1,7 +1,5 @@
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -60,7 +58,6 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
             }
 
             chat.getLastMessage()?.let { msg ->
-                Log.i("MYTAG", msg.toString())
                 if(!msg.isSeen && msg.sender?.id != myUser?.id) {
                     bind.tvUserLastMessageDate.setTypeface(null, android.graphics.Typeface.BOLD)
                     bind.tvUserLastMessage.setTypeface(null, android.graphics.Typeface.BOLD)
@@ -78,8 +75,6 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
                     hide()
                 }
             }
-
-
 
             bind.root.setOnClickListener {
                 setOnClick?.invoke(chat)

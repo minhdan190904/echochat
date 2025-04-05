@@ -3,16 +3,16 @@
     <item
         android:id="@+id/conversationFragment"
         android:icon="@drawable/ic_chat"
-        android:title="Chat" />
+        android:title="@string/messages" />
 
     <item
         android:id="@+id/friendsFragment"
         android:icon="@drawable/ic_friend"
-        android:title="Friend" />
+        android:title="@string/friends" />
 
 
     <item
         android:id="@+id/settingsFragment"
         android:icon="@drawable/ic_settings"
-        android:title="Setting" />
+        android:title="@string/setting" />
 </menu>

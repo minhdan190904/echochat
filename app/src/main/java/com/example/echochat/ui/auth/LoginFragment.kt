@@ -1,11 +1,12 @@
 package com.example.echochat.ui.auth
 
+import android.graphics.Color
 import android.os.Bundle
+import android.text.Html
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
-import android.util.Log
 import android.util.Patterns
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -50,8 +51,6 @@ class LoginFragment : Fragment() {
                         .setPopUpTo(R.id.main_navigation, true)
                         .build()
                 )
-            } else {
-                Log.e("SESSION_TAG", "User session is null")
             }
         }
 
@@ -68,11 +67,11 @@ class LoginFragment : Fragment() {
                 when {
                     emailLogin.isEmpty() -> {
                         binding.email.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etEmailLogin.error = "Email không được để trống"
+                        binding.etEmailLogin.error = getString(R.string.email_must_not_be_empty)
                     }
                     !Patterns.EMAIL_ADDRESS.matcher(emailLogin).matches() -> {
                         binding.email.endIconMode = TextInputLayout.END_ICON_NONE
-                        binding.etEmailLogin.error = "Email không hợp lệ"
+                        binding.etEmailLogin.error = getString(R.string.email_is_not_valid)
                     }
                     else -> {
                         binding.etEmailLogin.error = null
@@ -86,7 +85,7 @@ class LoginFragment : Fragment() {
                 val passwordLogin = it.toString().trim()
                 if (passwordLogin.isEmpty()) {
                     binding.password.endIconMode = TextInputLayout.END_ICON_NONE
-                    binding.etPasswordLogin.error = "Password không được để trống"
+                    binding.etPasswordLogin.error = getString(R.string.password_must_not_be_empty)
                 } else {
                     binding.etPasswordLogin.error = null
                     binding.password.endIconMode = TextInputLayout.END_ICON_CUSTOM
@@ -102,17 +101,28 @@ class LoginFragment : Fragment() {
 
     }
 
-    private fun setUpSpannable(){
-        val span = SpannableString("New user? Sign up")
+    private fun setUpSpannable() {
+        val fullText = Html.fromHtml(getString(R.string.new_user_sign_up), Html.FROM_HTML_MODE_LEGACY).toString()
+        val clickableText = getString(R.string.sign_up)
+        val spannableString = SpannableString(fullText)
+        val startIndex = fullText.indexOf(clickableText)
+        val endIndex = startIndex + clickableText.length
+        if (startIndex >= 0) {
+            spannableString.setSpan(
+                object : ClickableSpan() {
+                    override fun onClick(widget: View) {
+                        findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
+                    }
+                },
+                startIndex,
+                endIndex,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
 
-        span.setSpan(object : ClickableSpan() {
-            override fun onClick(widget: View) {9
-                findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
-            }
-        }, 10, 17, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-        binding.btnSignUp.text = span
+        binding.btnSignUp.text = spannableString
         binding.btnSignUp.movementMethod = LinkMovementMethod.getInstance()
+        binding.btnSignUp.highlightColor = Color.TRANSPARENT
     }
 
     private fun checkValidateInput() {
@@ -141,12 +151,12 @@ class LoginFragment : Fragment() {
                 is UiState.Failure -> {
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
-                    toast(state.error ?: "Lỗi đăng nhập")
+                    toast(state.error ?: getString(R.string.login_failed))
                 }
                 is UiState.Success -> {
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
-                    toast("Đăng nhập thành công")
+                    toast(getString(R.string.login_successful))
                     findNavController().navigate(
                         R.id.action_loginFragment_to_homeFragment,
                         null,

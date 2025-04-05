@@ -20,25 +20,6 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val authApi: AuthApi
 ) {
-//    suspend fun registerUser(registerDTO: RegisterDTO): NetworkResource<User>{
-//        return try {
-//            val registerUserApi = authApi.registerUser(registerDTO)
-//            NetworkResource.Success(registerUserApi.data)
-//        } catch (ex: HttpException) {
-//            NetworkResource.Error(
-//                message = when (ex.code()) {
-//                    409 -> "Email already exists"
-//                    500 -> "Internal Server Error. Please try again later."
-//                    else -> "Server error: ${ex.message()}"
-//                }, responseCode = ex.code()
-//            )
-//        } catch (ex: IOException) {
-//            NetworkResource.NetworkException("Network error. Please check your connection.")
-//        } catch (ex: Exception) {
-//            NetworkResource.Error(ex.message ?: "Unexpected error")
-//        }
-//    }
-
     suspend fun registerUser(registerDTO: RegisterDTO): NetworkResource<User> {
         return handleNetworkCall(
             call = { authApi.registerUser(registerDTO).data },
@@ -47,25 +28,6 @@ class AuthRepository @Inject constructor(
             )
         )
     }
-
-//    suspend fun loginUser(loginDTO: LoginDTO): NetworkResource<ResLoginDTO>{
-//        return try {
-//            val resLoginDTOApi = authApi.loginUser(loginDTO)
-//            NetworkResource.Success(resLoginDTOApi.data)
-//        } catch (ex: HttpException) {
-//            NetworkResource.Error(
-//                message = when (ex.code()) {
-//                    401 -> "Username or password is incorrect"
-//                    500 -> "Internal Server Error. Please try again later."
-//                    else -> "Server error: ${ex.message()}"
-//                }, responseCode = ex.code()
-//            )
-//        } catch (ex: IOException) {
-//            NetworkResource.NetworkException("Network error. Please check your connection.")
-//        } catch (ex: Exception) {
-//            NetworkResource.Error(ex.message ?: "Unexpected error")
-//        }
-//    }
 
     suspend fun loginUser(loginDTO: LoginDTO): NetworkResource<ResLoginDTO> {
         return handleNetworkCall(
@@ -77,41 +39,15 @@ class AuthRepository @Inject constructor(
     }
 
     suspend fun createUserDeviceToken(userDeviceToken: UserDeviceToken): NetworkResource<UserDeviceToken> {
-        return try {
-            val userDeviceTokenApi = authApi.createUserDeviceToken(userDeviceToken)
-            NetworkResource.Success(userDeviceTokenApi.data)
-        } catch (ex: HttpException) {
-            NetworkResource.Error(
-                message = when (ex.code()) {
-                    401 -> "Username or password is incorrect"
-                    500 -> "Internal Server Error. Please try again later."
-                    else -> "Server error: ${ex.message()}"
-                }, responseCode = ex.code()
-            )
-        } catch (ex: IOException) {
-            NetworkResource.NetworkException("Network error. Please check your connection.")
-        } catch (ex: Exception) {
-            NetworkResource.Error(ex.message ?: "Unexpected error")
-        }
+        return handleNetworkCall(
+            call = { authApi.createUserDeviceToken(userDeviceToken).data }
+        )
     }
 
     suspend fun deleteByToken(token: String): NetworkResource<Int> {
-        return try {
-            val codeResponse = authApi.deleteByToken(token)
-            NetworkResource.Success(codeResponse.data)
-        } catch (ex: HttpException) {
-            NetworkResource.Error(
-                message = when (ex.code()) {
-                    401 -> "Username or password is incorrect"
-                    500 -> "Internal Server Error. Please try again later."
-                    else -> "Server error: ${ex.message()}"
-                }, responseCode = ex.code()
-            )
-        } catch (ex: IOException) {
-            NetworkResource.NetworkException("Network error. Please check your connection.")
-        } catch (ex: Exception) {
-            NetworkResource.Error(ex.message ?: "Unexpected error")
-        }
+        return handleNetworkCall(
+            call = { authApi.deleteByToken(token).data }
+        )
     }
 
 }

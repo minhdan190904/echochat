@@ -43,10 +43,6 @@ class HomeFragment : Fragment() {
         connectWebSocketStatus()
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

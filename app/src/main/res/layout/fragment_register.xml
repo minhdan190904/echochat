@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="Đăng ký"
+        android:text="@string/sign_up"
         android:textColor="@color/colorPrimary"
         android:textSize="32sp"
         android:textStyle="bold"
@@ -52,7 +52,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Full name"
+                android:text="@string/full_name"
                 android:textColor="@color/gray"
                 android:textSize="15sp" />
 
@@ -88,7 +88,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Email"
+                android:text="@string/email"
                 android:textColor="@color/gray"
                 android:textSize="15sp" />
 
@@ -123,7 +123,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Password"
+                android:text="@string/password"
                 android:textColor="@color/gray"
                 android:textSize="15sp" />
 
@@ -166,7 +166,7 @@
                 android:id="@+id/tvTermsAndPolicy"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="I agree to Terms and Privacy Policy" />
+                tools:text="@string/terms_and_policy" />
         </LinearLayout>
 
         <Button
@@ -176,7 +176,7 @@
             android:layout_marginTop="30dp"
             android:enabled="false"
             android:padding="18dp"
-            android:text="SIGN UP"
+            android:text="@string/sign_up_big"
             android:textColor="@color/colorWhite"
             android:textSize="15sp"
             android:textStyle="bold" />
@@ -190,7 +190,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="Had a account? Sign in" />
+        tools:text="@string/had_a_account_sign_in" />
 
     <View
         android:id="@+id/blockingView"

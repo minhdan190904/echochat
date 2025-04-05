@@ -149,7 +149,6 @@ class ChatViewModel @Inject constructor(
                     val response = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
-//                            _chat.value = response.data  // Cập nhật lại từ API nếu cần
                             sendNotification(response.data!!, message, msg)
                         }
                         else -> {

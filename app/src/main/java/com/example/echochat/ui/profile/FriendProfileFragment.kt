@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.echochat.R
 import com.example.echochat.databinding.FragmentFriendProfileBinding
 import com.example.echochat.ui.chat.ChatActivity
 import com.example.echochat.util.CHAT_ID
@@ -42,7 +43,7 @@ class FriendProfileFragment : Fragment() {
             if(CHAT_ID != -1){
                 intentActivity(ChatActivity::class.java)
             } else {
-                toast("Chưa xử lý được")
+                toast(getString(R.string.can_handle))
             }
         }
     }
