@@ -14,6 +14,8 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -35,13 +37,6 @@ fun Activity.toast(content: String){
 
 fun Context.toast(message: String) {
     Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-}
-
-fun generateTimeNow(): String {
-    val symbols = DateFormatSymbols(Locale.ENGLISH)
-    val sdf = SimpleDateFormat("hh:mm a", Locale.getDefault())
-    sdf.dateFormatSymbols = symbols
-    return sdf.format(Date())
 }
 
 fun Fragment.intentActivity(destination: Class<out Activity>) {
@@ -86,6 +81,26 @@ suspend fun <T> handleNetworkCall(
         NetworkResource.NetworkException("Network error. Please check your connection.")
     } catch (ex: Exception) {
         NetworkResource.Error(ex.message ?: "Unexpected error")
+    }
+}
+
+fun formatMessageDate(sendingTime: Date?): String {
+    if (sendingTime == null) return ""
+    val sendingDateTime = LocalDateTime.ofInstant(sendingTime.toInstant(), java.time.ZoneId.systemDefault())
+    val sendingDate = sendingDateTime.toLocalDate()
+    val now = LocalDateTime.now()
+    val currentDate = now.toLocalDate()
+
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val dayOfWeekFormatter = DateTimeFormatter.ofPattern("EEE", Locale.getDefault())
+    val dateFormatter = DateTimeFormatter.ofPattern("dd/MM")
+    val fullDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    return when {
+        currentDate.year > sendingDate.year -> sendingDateTime.format(fullDateFormatter)
+        currentDate.dayOfYear - sendingDate.dayOfYear > 7 || currentDate.dayOfYear < sendingDate.dayOfYear -> sendingDateTime.format(dateFormatter)
+        currentDate.dayOfYear != sendingDate.dayOfYear -> sendingDateTime.format(dayOfWeekFormatter)
+        else -> sendingDateTime.format(timeFormatter)
     }
 }
 

@@ -9,6 +9,7 @@ import com.example.echochat.databinding.ItemConversationBinding
 import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
 import com.example.echochat.util.BindingUtils.setImageUrl
+import com.example.echochat.util.formatMessageDate
 import com.example.echochat.util.hide
 import com.example.echochat.util.myUser
 import com.example.echochat.util.show
@@ -28,6 +29,7 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
 
     inner class ChatListViewHolder(private val bind: ItemConversationBinding) :
         RecyclerView.ViewHolder(bind.root) {
+        @SuppressLint("SetTextI18n")
         fun bind(chat: Chat) {
             val otherUser = if (chat.user1.id == myUser?.id) chat.user2 else chat.user1
 
@@ -48,11 +50,11 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
             }
 
             bind.imageProfile.setImageUrl(otherUser.profileImageUrl)
-            bind.tvUserLastMessageDate.text = chat.getLastMessage()?.sendingTime.toString()
+            bind.tvUserLastMessageDate.text = "•" + formatMessageDate(chat.getLastMessage()?.sendingTime)
             bind.tvUserName.text = otherUser.name
 
             if(chat.getLastMessage() == null) {
-                bind.tvUserLastMessage.text = "Let start a chat"
+                bind.tvUserLastMessage.text = bind.root.context.getString(R.string.let_start_a_chat)
                 bind.tvUserLastMessageDate.text = ""
                 bind.tvUserLastMessage.setTypeface(null, android.graphics.Typeface.BOLD)
             }

@@ -345,7 +345,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun Date.customLastSeenChat(): String {
-        return when (val duration = Date().time - this.time - 3600 * 1000 * 7) {
+        return when (val duration = Date().time - this.time) {
             in 0..<60000 -> getString(R.string.few_seconds_ago)
             in 60000..<3600000 -> getString(R.string.minutes_ago, duration / 60000)
             in 3600000..<86400000 -> getString(R.string.hours_ago, duration / 3600000)

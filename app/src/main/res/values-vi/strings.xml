@@ -70,4 +70,5 @@
     <string name="setting">Cài đặt</string>
     <string name="vietnamese">Tiếng Việt</string>
     <string name="english">Tiếng Anh</string>
+    <string name="let_start_a_chat">Hãy gửi lời chào</string>
 </resources>

@@ -1,11 +1,12 @@
 package com.example.echochat.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 data class Message(
     val sender: User? = null,
     var message: String = "",
-    val sendingTime: String = "",
+    val sendingTime: Date? = null,
     @SerializedName("isSeen") var isSeen: Boolean = false,
     val id: Int? = null,
     val messageType: MessageType = MessageType.TEXT

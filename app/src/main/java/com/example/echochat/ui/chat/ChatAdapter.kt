@@ -16,6 +16,7 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageItemCal
             R.layout.item_chat_other_person -> OtherUserChatViewHolder.from(parent)
             else -> OtherUserChatViewHolder.from(parent)
         }
+
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
@@ -44,13 +45,7 @@ class LoginFragment : Fragment() {
 
         viewModel.getSession { user ->
             if (user != null) {
-                findNavController().navigate(
-                    R.id.action_loginFragment_to_homeFragment,
-                    null,
-                    NavOptions.Builder()
-                        .setPopUpTo(R.id.main_navigation, true)
-                        .build()
-                )
+                navigateToHome()
             }
         }
 
@@ -99,6 +94,17 @@ class LoginFragment : Fragment() {
 
         setUpSpannable()
 
+    }
+
+    private fun navigateToHome() {
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+        findNavController().navigate(
+            R.id.action_loginFragment_to_homeFragment,
+            null,
+            NavOptions.Builder()
+                .setPopUpTo(R.id.main_navigation, true)
+                .build()
+        )
     }
 
     private fun setUpSpannable() {
@@ -157,13 +163,7 @@ class LoginFragment : Fragment() {
                     binding.progressBarLoadNotification.hide()
                     binding.blockingView.hide()
                     toast(getString(R.string.login_successful))
-                    findNavController().navigate(
-                        R.id.action_loginFragment_to_homeFragment,
-                        null,
-                        NavOptions.Builder()
-                            .setPopUpTo(R.id.main_navigation, true)
-                            .build()
-                    )
+                    navigateToHome()
                 }
 
                 else -> {}

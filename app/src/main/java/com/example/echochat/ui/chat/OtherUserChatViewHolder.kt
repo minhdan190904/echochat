@@ -18,9 +18,14 @@ class OtherUserChatViewHolder private constructor(private val binding: ItemChatO
                 Message.MessageType.VIDEO -> true
                 else -> false
             }
-            tvTimeSentImage.isVisible = imageMessage.isVisible
             tvMessage.isVisible = item.messageType == Message.MessageType.TEXT
-            tvTimeSentText.isVisible = tvMessage.isVisible
+            binding.tvMessage.setOnClickListener {
+                binding.tvTimeSent.isVisible = !binding.tvTimeSent.isVisible
+            }
+
+            binding.imageMessage.setOnClickListener {
+                binding.tvTimeSent.isVisible = !binding.tvTimeSent.isVisible
+            }
             executePendingBindings()
         }
     }

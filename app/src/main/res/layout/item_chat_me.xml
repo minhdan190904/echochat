@@ -33,6 +33,20 @@
             tools:srcCompat="@tools:sample/avatars" />
 
         <TextView
+            android:id="@+id/tvTimeSent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:textSize="10sp"
+            android:visibility="gone"
+            android:text="@{listItem.sendingTime.toString()}"
+            android:fontFamily="@font/sf_pro_display_regular"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
             android:id="@+id/tv_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -54,22 +68,9 @@
             app:layout_constraintEnd_toStartOf="@+id/image_profile"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTimeSent"
             app:layout_constraintVertical_bias="0.0"
             tools:text="@tools:sample/lorem" />
-
-        <TextView
-            android:id="@+id/tvTimeSentText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:textSize="10sp"
-            android:text="@{listItem.sendingTime}"
-            android:fontFamily="@font/sf_pro_display_regular"
-            app:layout_constraintEnd_toStartOf="@+id/tv_message"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="12dp"/>
-
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/image_message"
@@ -87,24 +88,11 @@
             app:layout_constraintEnd_toStartOf="@+id/image_profile"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTimeSent"
             app:layout_constraintVertical_bias="0.0"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.AppTheme.RoundedImage"
             tools:src="@tools:sample/avatars"
             tools:visibility="gone" />
-
-        <TextView
-            android:id="@+id/tvTimeSentImage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="5dp"
-            android:textSize="10sp"
-            android:text="@{listItem.sendingTime}"
-            android:fontFamily="@font/sf_pro_display_regular"
-            app:layout_constraintEnd_toStartOf="@id/image_message"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="12dp"/>
-
 
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/barrier"

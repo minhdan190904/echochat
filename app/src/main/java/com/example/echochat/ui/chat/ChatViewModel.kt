@@ -13,12 +13,11 @@ import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FileRepository
 import com.example.echochat.repository.NotificationRepository
-import com.example.echochat.repository.UserRepository
-import com.example.echochat.util.generateTimeNow
 import com.example.echochat.util.myUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import okhttp3.MultipartBody
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -105,7 +104,7 @@ class ChatViewModel @Inject constructor(
                 sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.TEXT,
-                sendingTime = generateTimeNow(),
+                sendingTime = Date(),
                 isSeen = false
             )
 
@@ -137,7 +136,7 @@ class ChatViewModel @Inject constructor(
                 sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.VIDEO,
-                sendingTime = generateTimeNow(),
+                sendingTime = Date(),
                 isSeen = false
             )
             _messageData.value = message
@@ -166,7 +165,7 @@ class ChatViewModel @Inject constructor(
                 sender = myUser,
                 message = msg,
                 messageType = Message.MessageType.IMAGE,
-                sendingTime = generateTimeNow(),
+                sendingTime = Date(),
                 isSeen = false
             )
             _messageData.value = message

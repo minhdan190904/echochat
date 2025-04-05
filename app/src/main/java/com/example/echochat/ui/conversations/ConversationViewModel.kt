@@ -110,7 +110,12 @@ class ConversationViewModel @Inject constructor(
             val response = chatRepository.getMyConversations(searchQuery.value)
             when (response) {
                 is NetworkResource.Success -> {
-                    _chatList.value = response.data.sortedBy { it.getLastMessage()?.id }.reversed()
+                    Log.i("MYTAG", response.data.toString())
+                    _chatList.value = response.data.sortedWith(
+                        compareByDescending<Chat> { chat ->
+                            chat.getLastMessage()?.sendingTime ?: chat.timeCreated
+                        }
+                    )
                     _friendsList.value = response.data.mapNotNull { myUser?.let { it1 ->
                         it.getOtherUser(
                             it1

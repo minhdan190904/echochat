@@ -1,11 +1,13 @@
 package com.example.echochat.model
 
 import com.example.echochat.util.myUser
+import java.util.Date
 
 data class Chat(
     val user1: User,
     val user2: User,
     var id: Int? = null,
+    val timeCreated: Date? = null,
     val messageList: MutableList<Message> = mutableListOf()
 ) {
 
