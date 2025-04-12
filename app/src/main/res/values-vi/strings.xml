@@ -9,7 +9,9 @@
     <string name="last_message_other">%s: %s</string>
     <string name="last_message_me">Bạn: %s</string>
     <string name="last_message_me_image">Bạn: Đã gửi một ảnh.</string>
+    <string name="last_message_me_video">Bạn: Đã gửi một video.</string>
     <string name="last_message_other_image">%s: Đã gửi một ảnh.</string>
+    <string name="last_message_other_video">%s: Đã gửi một video.</string>
     <string name="hello_blank_fragment">Xin chào, fragment trống</string>
     <string name="notification_not_available">Thông báo hiện không khả dụng</string>
     <string name="new_user_sign_up">Người dùng mới? <b>Đăng ký</b></string>

@@ -13,6 +13,7 @@ import com.example.echochat.network.NetworkResource
 import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FileRepository
 import com.example.echochat.repository.NotificationRepository
+import com.example.echochat.util.myFriend
 import com.example.echochat.util.myUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -45,6 +46,51 @@ class ChatViewModel @Inject constructor(
     private val _videoUrl: MutableLiveData<String> = MutableLiveData<String>()
     val videoUrl: LiveData<String> = _videoUrl
 
+    private val _uploadingMessages = MutableLiveData<MutableMap<String, Message>>(mutableMapOf())
+    val uploadingMessages: LiveData<MutableMap<String, Message>> = _uploadingMessages
+
+    private fun generateTempId(): String {
+        return "temp_${System.currentTimeMillis()}"
+    }
+
+    private val _fileUrl: MutableLiveData<String?> = MutableLiveData<String?>()
+    val fileUrl: LiveData<String?> = _fileUrl
+
+    fun openSlingImage(fileUrl: String){
+        Log.i("MYTAG", "FileUrl: $fileUrl")
+        _fileUrl.value = fileUrl
+    }
+
+    fun clearFileUrl() {
+        _fileUrl.value = null
+    }
+
+    private fun addUploadingMessage(messageType: Message.MessageType): String {
+        val tempId = generateTempId()
+        val tempMessage = Message(
+            idLoading = tempId,
+            sender = myUser,
+            message = "Đang gửi...",
+            messageType = messageType,
+            sendingTime = Date(),
+            isSeen = false,
+            isUploading = true
+        )
+
+        _messageData.value = tempMessage
+
+        val updatedMap = _uploadingMessages.value ?: mutableMapOf()
+        updatedMap[tempId] = tempMessage
+        _uploadingMessages.value = updatedMap
+
+        return tempId
+    }
+
+    private fun removeUploadingMessage(tempId: String) {
+        val updatedMap = _uploadingMessages.value ?: mutableMapOf()
+        updatedMap.remove(tempId)
+        _uploadingMessages.value = updatedMap
+    }
 
     fun getChat(chatId: Int, isFetchOnline: Boolean) {
         this.chatId = chatId
@@ -55,6 +101,7 @@ class ChatViewModel @Inject constructor(
                 is NetworkResource.Success -> {
                     _chat.value = response.data
                     _chatUiState.value = UiState.HasData
+                    Log.i("MYTAG", "Chat: ${myFriend}")
                 }
 
                 else -> {
@@ -65,16 +112,21 @@ class ChatViewModel @Inject constructor(
     }
 
     fun uploadImage(file: MultipartBody.Part){
+        val tempId = addUploadingMessage(Message.MessageType.IMAGE)
+
         viewModelScope.launch {
             val response = fileRepository.uploadFile(file, "message")
             when (response) {
                 is NetworkResource.Success -> {
+                    removeUploadingMessage(tempId)
                     _imageUrl.value = response.data.pathToFile
                 }
                 is NetworkResource.Error -> {
+                    removeUploadingMessage(tempId)
                     response.message?.let { Log.i("ErrorFile", it) }
                 }
-                is NetworkResource.NetworkException ->{
+                is NetworkResource.NetworkException -> {
+                    removeUploadingMessage(tempId)
                     response.message?.let { Log.i("ErrorFile", it) }
                 }
             }
@@ -82,16 +134,21 @@ class ChatViewModel @Inject constructor(
     }
 
     fun uploadVideo(file: MultipartBody.Part){
+        val tempId = addUploadingMessage(Message.MessageType.VIDEO)
+
         viewModelScope.launch {
             val response = fileRepository.uploadFile(file, "message")
             when (response) {
                 is NetworkResource.Success -> {
+                    removeUploadingMessage(tempId)
                     _videoUrl.value = response.data.pathToFile
                 }
                 is NetworkResource.Error -> {
+                    removeUploadingMessage(tempId)
                     response.message?.let { Log.i("ErrorFile", it) }
                 }
-                is NetworkResource.NetworkException ->{
+                is NetworkResource.NetworkException -> {
+                    removeUploadingMessage(tempId)
                     response.message?.let { Log.i("ErrorFile", it) }
                 }
             }
@@ -169,7 +226,6 @@ class ChatViewModel @Inject constructor(
                 isSeen = false
             )
             _messageData.value = message
-
             messageText.value = ""
 
             chatId?.let {

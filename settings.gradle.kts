@@ -7,6 +7,8 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
+        maven ("https://storage.zego.im/maven")
+        maven ("https://www.jitpack.io")
         mavenCentral()
         gradlePluginPortal()
     }
@@ -16,6 +18,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven ("https://storage.zego.im/maven")
+        maven ("https://www.jitpack.io")
     }
 }
 

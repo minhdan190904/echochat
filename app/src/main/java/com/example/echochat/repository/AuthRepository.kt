@@ -1,6 +1,5 @@
 package com.example.echochat.repository
 
-import com.example.echochat.model.ResResponse
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.LoginDTO
 import com.example.echochat.model.dto.RegisterDTO
@@ -8,11 +7,7 @@ import com.example.echochat.model.dto.ResLoginDTO
 import com.example.echochat.model.dto.UserDeviceToken
 import com.example.echochat.network.NetworkResource
 import com.example.echochat.network.api.AuthApi
-import com.example.echochat.util.UiState
 import com.example.echochat.util.handleNetworkCall
-import com.example.echochat.util.myUser
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 

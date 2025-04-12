@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "com.example.echochat"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.echochat"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -56,7 +56,16 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // ✅ Splash Screen
     implementation( "androidx.core:core-splashscreen:1.0.1" )
+
+    // ✅ ZegoCloud
+    implementation ("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
+
+    // ✅ ExoPlayer
+    implementation("androidx.media3:media3-exoplayer:1.6.0")
+    implementation("androidx.media3:media3-exoplayer-dash:1.6.0")
+    implementation("androidx.media3:media3-ui:1.6.0")
 
     // ✅ Firebase
     implementation("com.google.firebase:firebase-analytics")

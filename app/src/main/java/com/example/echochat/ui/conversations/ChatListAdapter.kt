@@ -40,17 +40,23 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
                     } else {
                         bind.root.context.getString(R.string.last_message_other_image, msg.sender?.name)
                     }
-                } else {
+                } else if(msg.messageType == Message.MessageType.TEXT) {
                     if (msg.sender?.id == myUser?.id) {
                         bind.root.context.getString(R.string.last_message_me, msg.message)
                     } else {
                         bind.root.context.getString(R.string.last_message_other, msg.sender?.name, msg.message)
                     }
+                } else {
+                    if(msg.sender?.id == myUser?.id) {
+                        bind.root.context.getString(R.string.last_message_me_video)
+                    } else {
+                        bind.root.context.getString(R.string.last_message_other_video, msg.sender?.name)
+                    }
                 }
             }
 
             bind.imageProfile.setImageUrl(otherUser.profileImageUrl)
-            bind.tvUserLastMessageDate.text = "•" + formatMessageDate(chat.getLastMessage()?.sendingTime)
+            bind.tvUserLastMessageDate.text = "• " + formatMessageDate(chat.getLastMessage()?.sendingTime)
             bind.tvUserName.text = otherUser.name
 
             if(chat.getLastMessage() == null) {

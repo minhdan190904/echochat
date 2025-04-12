@@ -9,7 +9,9 @@ data class Message(
     val sendingTime: Date? = null,
     @SerializedName("isSeen") var isSeen: Boolean = false,
     val id: Int? = null,
-    val messageType: MessageType = MessageType.TEXT
+    val messageType: MessageType = MessageType.TEXT,
+    var isUploading: Boolean = false,
+    var idLoading: String? = null
 ){
     enum class MessageType {
         TEXT,

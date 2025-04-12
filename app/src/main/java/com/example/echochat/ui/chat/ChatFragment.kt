@@ -13,11 +13,13 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentChatBinding
@@ -25,13 +27,19 @@ import com.example.echochat.model.Message
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
+import com.example.echochat.util.APP_ID
+import com.example.echochat.util.APP_SIGN
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.CHECK
 import com.example.echochat.util.formatOnlyDate
+import com.example.echochat.util.myFriend
 import com.example.echochat.util.myUser
 import com.example.echochat.util.toast
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.gson.Gson
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig
+import com.zegocloud.uikit.service.defines.ZegoUIKitUser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -54,7 +62,7 @@ class ChatFragment : Fragment() {
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ChatViewModel by viewModels()
-    private val chatAdapter = ChatAdapter()
+    private lateinit var chatAdapter: ChatAdapter
     private val chatTempList = mutableListOf<Message>()
     private val gson = Gson()
     private var webSocket: WebSocket? = null
@@ -76,6 +84,7 @@ class ChatFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.i("CHATFRAG", "onCreateView")
         _binding = FragmentChatBinding.inflate(inflater, container, false).apply {
             lifecycleOwner = viewLifecycleOwner
         }
@@ -84,6 +93,7 @@ class ChatFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
+        Log.i("CHATFRAG", "onStart")
         CHECK = false
         observeNetworkAndConnect()
     }
@@ -112,17 +122,19 @@ class ChatFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        Log.i("CHATFRAG", "onDestroyView")
         _binding = null
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        Log.i("CHATFRAG", "onDestroy")
         disconnectWebSocket()
-        Log.i("MYTAG", "Fragment destroyed")
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.i("CHATFRAG", "onViewCreated")
         binding.viewModel = viewModel
         initView()
         observeValues()
@@ -130,9 +142,48 @@ class ChatFragment : Fragment() {
         binding.buttonTakePhoto.setOnClickListener {
             showBottomSheet()
         }
+
+        if(myFriend != null){
+            Log.i("MYTAG12", "Friend: ${myFriend!!.name}")
+            getReadyVideoCall(myFriend!!)
+            getReadyAudioCall(myFriend!!)
+        }
+    }
+
+    private fun getReadyVideoCall(targetUser: User) {
+        binding.toolbar.iconVideoCall.apply {
+            setIsVideoCall(true)
+            setResourceID("zego_uikit_call")
+            setInvitees(
+                listOf(
+                    ZegoUIKitUser(
+                        targetUser.id.toString(),
+                        targetUser.name
+                    )
+                )
+            )
+            setBackgroundResource(R.drawable.ic_webcam)
+        }
+    }
+
+    private fun getReadyAudioCall(targetUser: User) {
+        binding.toolbar.iconAudioCall.apply {
+            setIsVideoCall(false)
+            setResourceID("zego_uikit_call")
+            setInvitees(
+                listOf(
+                    ZegoUIKitUser(
+                        targetUser.id.toString(),
+                        targetUser.name
+                    )
+                )
+            )
+            setBackgroundResource(R.drawable.ic_call)
+        }
     }
 
     private fun connectWebSocket() {
+        disconnectWebSocket()
         webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 lifecycleScope.launch {
@@ -169,6 +220,9 @@ class ChatFragment : Fragment() {
     }
 
     private fun initView() {
+
+        chatAdapter = ChatAdapter(viewModel)
+
         with(binding) {
             messagesRecyclerView.setHasFixedSize(true)
             messagesRecyclerView.adapter = chatAdapter
@@ -185,7 +239,19 @@ class ChatFragment : Fragment() {
     }
 
     private fun observeValues() {
+        viewModel.fileUrl.observe(viewLifecycleOwner) { fileUrl ->
+            if (fileUrl != null) {
+                val bundle = bundleOf(
+                    "chatId" to CHAT_ID,
+                    "imageUrl" to fileUrl
+                )
+                findNavController().navigate(R.id.slidingImageFragment, bundle)
+                viewModel.clearFileUrl()
+            }
+        }
+
         viewModel.chat.observe(viewLifecycleOwner) { chat ->
+            Log.i("TEST", "chat observe")
             chatAdapter.submitList(chat.messageList)
             chatTempList.clear()
             chatTempList.addAll(chat.messageList)
@@ -198,21 +264,28 @@ class ChatFragment : Fragment() {
 
             val receiver = if (chat.user1.id == myUser?.id) chat.user2 else chat.user1
 
-            if (isNotInit) {
-                val lastMessage = chat.getLastMessage()
-                if (lastMessage != null) {
-                    val jsonMessage = gson.toJson(chat.id?.let { MessageDTO(lastMessage, receiver.id!!, CHAT_ID) })
-                    webSocket?.send(jsonMessage)
-                }
-            }
-
             isNotInit = true
 
             initToolbar(receiver)
         }
 
-        viewModel.messageData.observe(viewLifecycleOwner) { message->
-            chatTempList.add(message)
+        viewModel.messageData.observe(viewLifecycleOwner) { message ->
+            Log.i("TEST", "message observe")
+
+            if (message.messageType == Message.MessageType.IMAGE || message.messageType == Message.MessageType.VIDEO) {
+                val existingMessageIndex = chatTempList.indexOfLast { existingMsg ->
+                    existingMsg.messageType == message.messageType && existingMsg.isUploading
+                }
+
+                if (existingMessageIndex >= 0) {
+                    chatTempList[existingMessageIndex] = message
+                } else {
+                    chatTempList.add(message)
+                }
+            } else {
+                chatTempList.add(message)
+            }
+
             chatAdapter.submitList(chatTempList)
             if (chatTempList.isNotEmpty()) {
                 binding.messagesRecyclerView.post {
@@ -223,7 +296,7 @@ class ChatFragment : Fragment() {
             val receiver = myUser?.let { viewModel.chat.value?.getOtherUser(it) }
 
             if (isNotInit) {
-                if (message != null) {
+                if (message != null && !message.isUploading) {
                     val jsonMessage = gson.toJson(MessageDTO(message, receiver?.id!!, CHAT_ID))
                     webSocket?.send(jsonMessage)
                 }
@@ -241,30 +314,40 @@ class ChatFragment : Fragment() {
                 viewModel.sendVideoMessage()
             }
         }
+
+        viewModel.uploadingMessages.observe(viewLifecycleOwner) { uploadingMap ->
+            chatAdapter.notifyDataSetChanged()
+        }
     }
 
 
     private var imageUri: Uri? = null
     private lateinit var dialog: BottomSheetDialog
 
-    private val resultContract = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        uri?.let {
-            Log.i("MYTAG", "URI: $it")
-            uploadImageFromUri(it)
-        }
-    }
-
-    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            imageUri?.let {
+    private val resultContract =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let {
+                Log.i("MYTAG", "URI: $it")
                 uploadImageFromUri(it)
             }
         }
-    }
+
+    private val cameraLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                imageUri?.let {
+                    uploadImageFromUri(it)
+                }
+            }
+        }
 
     private fun captureImage() {
         val imageFile = createImageFile()
-        imageUri = FileProvider.getUriForFile(this.requireContext(), "${requireContext().packageName}.provider", imageFile)
+        imageUri = FileProvider.getUriForFile(
+            this.requireContext(),
+            "${requireContext().packageName}.provider",
+            imageFile
+        )
 
         val callCameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
             putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
@@ -287,8 +370,9 @@ class ChatFragment : Fragment() {
         return file
     }
 
-    private fun showBottomSheet(){
-        val dialogView = layoutInflater.inflate(R.layout.bottom_sheet_dialog_choose_image_option, null)
+    private fun showBottomSheet() {
+        val dialogView =
+            layoutInflater.inflate(R.layout.bottom_sheet_dialog_choose_image_option, null)
         dialog = BottomSheetDialog(this.requireContext())
         dialog.setContentView(dialogView)
         dialogView.findViewById<View>(R.id.tvChooseImageGallery).setOnClickListener {
@@ -320,7 +404,7 @@ class ChatFragment : Fragment() {
             val mediaType = mimeType.toMediaTypeOrNull()
             val requestFile = file.asRequestBody(mediaType)
             val filePart = MultipartBody.Part.createFormData("file", file.name, requestFile)
-            if(mimeType.contains("image")) {
+            if (mimeType.contains("image")) {
                 viewModel.uploadImage(filePart)
             } else {
                 viewModel.uploadVideo(filePart)

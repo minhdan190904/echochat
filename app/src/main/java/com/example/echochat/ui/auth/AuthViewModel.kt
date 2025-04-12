@@ -34,6 +34,9 @@ class AuthViewModel @Inject constructor(
     private val _login = MutableLiveData<UiState<ResLoginDTO>>()
     val login: LiveData<UiState<ResLoginDTO>> = _login
 
+    private val _registerInfo = MutableLiveData<LoginDTO>()
+    val registerInfo: LiveData<LoginDTO> = _registerInfo
+
     fun register(
         email: String,
         password: String,
@@ -50,6 +53,10 @@ class AuthViewModel @Inject constructor(
             )
             when (response) {
                 is NetworkResource.Success -> {
+                    _registerInfo.value = LoginDTO(
+                        username = email,
+                        password = password
+                    )
                     _register.value = UiState.Success(response.data)
                 }
 

@@ -8,7 +8,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -17,7 +16,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentHomeBinding
-import com.example.echochat.util.toast
+import com.permissionx.guolindev.PermissionX
 import dagger.hilt.android.AndroidEntryPoint
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -67,7 +66,27 @@ class HomeFragment : Fragment() {
     }
 
     private fun getPermission() {
-        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.POST_NOTIFICATIONS) !=
+
+        PermissionX.init(this)
+            .permissions(Manifest.permission.SYSTEM_ALERT_WINDOW)
+            .onExplainRequestReason { scope, deniedList ->
+                val message =
+                    "We need your consent for the following permissions in order to use the offline call function properly"
+                scope.showRequestReasonDialog(deniedList, message, "Allow", "Deny")
+            }
+            .request { allGranted, grantedList, deniedList ->
+                if (allGranted) {
+                    Log.d("TAG", "All permissions granted")
+                } else {
+                    Log.d("TAG", "Permissions denied: $deniedList")
+                }
+            }
+
+
+        if (ContextCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.POST_NOTIFICATIONS
+            ) !=
             PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
@@ -85,7 +104,10 @@ class HomeFragment : Fragment() {
             )
         }
 
-        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_NETWORK_STATE) !=
+        if (ContextCompat.checkSelfPermission(
+                requireActivity(),
+                Manifest.permission.ACCESS_NETWORK_STATE
+            ) !=
             PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(

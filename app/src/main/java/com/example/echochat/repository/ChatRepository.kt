@@ -80,4 +80,14 @@ class ChatRepository @Inject constructor(
             )
         )
     }
+
+    suspend fun getAllImageAndVideoUrlPath(chatId: Int): NetworkResource<List<String>> {
+        val messageList = chatList.find { it.id == chatId }?.messageList
+        val listUrl = messageList?.filter { it.messageType == Message.MessageType.IMAGE || it.messageType == Message.MessageType.VIDEO }
+            ?.mapNotNull { it.message }?.toList()
+        if(listUrl != null) {
+            return NetworkResource.Success(listUrl)
+        }
+        return NetworkResource.Error("Error fetching image and video URLs")
+    }
 }

@@ -8,5 +8,22 @@
         android:id="@+id/chatFragment"
         android:name="com.example.echochat.ui.chat.ChatFragment"
         android:label="ChatFragment"
-        tools:layout="@layout/fragment_chat"/>
+        tools:layout="@layout/fragment_chat">
+        <action
+            android:id="@+id/action_chatFragment_to_slidingImageFragment"
+            app:destination="@id/slidingImageFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/slidingImageFragment"
+        android:name="com.example.echochat.ui.chat.SlidingImageFragment"
+        android:label="fragment_sliding_image"
+        tools:layout="@layout/fragment_sliding_image">
+        <argument
+            android:name="imageUrl"
+            app:argType="string" />
+        <argument
+            android:name="chatId"
+            app:argType="integer"
+            android:defaultValue="0"/>
+    </fragment>
 </navigation>

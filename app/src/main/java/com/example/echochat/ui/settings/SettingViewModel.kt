@@ -15,6 +15,7 @@ import com.example.echochat.repository.AuthRepository
 import com.example.echochat.util.SharedPreferencesReManager
 import com.example.echochat.util.UiState
 import com.example.echochat.util.tokenUserDevice
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -57,6 +58,7 @@ class SettingViewModel @Inject constructor(
                 tokenUserDevice = ""
             }
             _logout.value = UiState.Loading
+            ZegoUIKitPrebuiltCallService.logoutUser()
             val response = authRepository.deleteByToken(tokenUserDevice!!)
             when (response) {
 

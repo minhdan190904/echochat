@@ -13,10 +13,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentRegisterBinding
+import com.example.echochat.model.dto.LoginDTO
 import com.example.echochat.util.PRIVACY_URL
 import com.example.echochat.util.TERMS_URL
 import com.example.echochat.util.UiState
@@ -31,7 +33,7 @@ import dagger.hilt.android.AndroidEntryPoint
 class RegisterFragment : Fragment() {
 
     private lateinit var binding: FragmentRegisterBinding
-    private val viewModel: AuthViewModel by viewModels()
+    private val viewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

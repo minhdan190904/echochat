@@ -10,6 +10,9 @@
         <variable
             name="listItem"
             type="com.example.echochat.model.Message" />
+        <variable
+            name="viewModel"
+            type="com.example.echochat.ui.chat.ChatViewModel" />
 
     </data>
 
@@ -72,9 +75,22 @@
             app:layout_constraintVertical_bias="0.0"
             tools:text="@tools:sample/lorem" />
 
+        <com.google.android.material.chip.Chip
+            android:id="@+id/loading_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đang gửi..."
+            app:chipIcon="@drawable/ic_loading"
+            app:chipIconTint="@color/colorPrimary"
+            app:chipBackgroundColor="@color/colorWhite"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/image_profile" />
+
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/image_message"
-            imageUrl="@{listItem.message}"
             android:layout_width="@dimen/message_image_type_size"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/margin_message"

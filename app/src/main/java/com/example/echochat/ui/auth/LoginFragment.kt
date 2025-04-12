@@ -14,23 +14,29 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentLoginBinding
+import com.example.echochat.util.APP_ID
+import com.example.echochat.util.APP_SIGN
 import com.example.echochat.util.UiState
 import com.example.echochat.util.hide
+import com.example.echochat.util.myUser
 import com.example.echochat.util.show
 import com.example.echochat.util.toast
 import com.google.android.material.textfield.TextInputLayout
+import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService
+import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
-    private val viewModel: AuthViewModel by viewModels()
+    private val viewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -97,7 +103,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun navigateToHome() {
-        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
+//        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN)
         findNavController().navigate(
             R.id.action_loginFragment_to_homeFragment,
             null,
@@ -105,6 +111,20 @@ class LoginFragment : Fragment() {
                 .setPopUpTo(R.id.main_navigation, true)
                 .build()
         )
+        setUpCallVideo()
+    }
+
+    private fun setUpCallVideo() {
+        val callInvitationConfig = ZegoUIKitPrebuiltCallInvitationConfig();
+        ZegoUIKitPrebuiltCallService.init(
+            requireActivity().application,
+            APP_ID,
+            APP_SIGN,
+            myUser!!.id.toString(),
+            myUser!!.name,
+            callInvitationConfig
+        )
+
     }
 
     private fun setUpSpannable() {
@@ -148,6 +168,11 @@ class LoginFragment : Fragment() {
     }
 
     private fun observer() {
+        viewModel.registerInfo.observe(viewLifecycleOwner) { loginDTO ->
+            binding.etEmailLogin.setText(loginDTO.username)
+            binding.etPasswordLogin.setText(loginDTO.password)
+        }
+
         viewModel.login.observe(viewLifecycleOwner) { state ->
             when(state){
                 is UiState.Loading -> {

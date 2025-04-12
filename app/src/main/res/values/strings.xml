@@ -8,7 +8,9 @@
     <string name="last_message_other">%s: %s</string>
     <string name="last_message_me">You: %s</string>
     <string name="last_message_me_image">You: Send a image.</string>
+    <string name="last_message_me_video">You: Send a video.</string>
     <string name="last_message_other_image">%s: Send a image.</string>
+    <string name="last_message_other_video">%s: Send a video.</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="notification_not_available">Notification not available</string>
     <string name="new_user_sign_up">New user? <b>Sign up</b></string>

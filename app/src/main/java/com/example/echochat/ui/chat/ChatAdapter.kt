@@ -6,9 +6,12 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.echochat.R
 import com.example.echochat.model.Message
+import com.example.echochat.ui.friends.FriendsViewModel
 import com.example.echochat.util.myUser
 
-class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageItemCallback()) {
+class ChatAdapter(
+    private val viewModel: ChatViewModel? = null,
+) : ListAdapter<Message, RecyclerView.ViewHolder>(MessageItemCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
@@ -25,8 +28,8 @@ class ChatAdapter : ListAdapter<Message, RecyclerView.ViewHolder>(MessageItemCal
 
         item?.let {
             when (itemViewType) {
-                R.layout.item_chat_me -> (holder as MyUserChatViewHolder).bind(it)
-                R.layout.item_chat_other_person -> (holder as OtherUserChatViewHolder).bind(it)
+                R.layout.item_chat_me -> (holder as MyUserChatViewHolder).bind(it, viewModel)
+                R.layout.item_chat_other_person -> (holder as OtherUserChatViewHolder).bind(it, viewModel)
             }
 
         }

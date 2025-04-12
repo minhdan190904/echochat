@@ -14,7 +14,6 @@
         android:id="@+id/toolbar_conversation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:contentInsetStartWithNavigation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:background="@color/colorPrimary"
@@ -45,7 +44,7 @@
                 android:text="@{viewModel.chat.chatTitle}"
                 android:textSize="@dimen/conversation_person_name_text_size"
                 app:layout_constraintBottom_toTopOf="@id/tv_user_last_seen"
-                app:layout_constraintEnd_toStartOf="@id/icon_settings"
+                app:layout_constraintEnd_toStartOf="@id/icon_audio_call"
                 app:layout_constraintStart_toEndOf="@id/icon_back"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="User's name" />
@@ -57,22 +56,30 @@
                 android:fontFamily="@font/sf_pro_display_regular"
                 android:textColor="?attr/colorOnPrimary"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/icon_settings"
+                app:layout_constraintEnd_toStartOf="@id/icon_audio_call"
                 app:layout_constraintStart_toEndOf="@id/icon_back"
                 app:layout_constraintTop_toBottomOf="@id/tv_user_name"
                 app:layout_constraintVertical_bias="0"
                 tools:text="@string/text_active_now" />
 
-            <ImageView
-                android:id="@+id/icon_settings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
+            <com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton
+                android:id="@+id/icon_audio_call"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:layout_marginEnd="16dp"
-                android:src="@drawable/ic_info"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"/>
+
+
+            <com.zegocloud.uikit.prebuilt.call.invite.widget.ZegoSendCallInvitationButton
+                android:id="@+id/icon_video_call"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="16dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/icon_audio_call"
+                app:layout_constraintTop_toTopOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
