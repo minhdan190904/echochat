@@ -72,4 +72,7 @@
     <string name="vietnamese">Vietnamese</string>
     <string name="english">English</string>
     <string name="let_start_a_chat">Let start a chat</string>
+    <string name="option">Option:</string>
+    <string name="generating_responses">Generating responses...</string>
+    <string name="options">Options</string>
 </resources>

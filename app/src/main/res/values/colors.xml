@@ -16,4 +16,17 @@
     <color name="gray">#808080</color>
     <color name="colorPrimary">#FF00C9A7</color>
     <color name="red">#FF0000</color>
+    <color name="yellow_500">#ffde03</color>
+    <color name="blue_700">#0336ff</color>
+    <color name="red_500">#ff0266</color>
+    <color name="green">#00FF00</color>
+    <color name="pink">#FF00FF</color>
+    <integer-array name="cat_custom_progress_colors">
+        <item>@color/yellow_500</item>
+        <item>@color/blue_700</item>
+        <item>@color/green</item>
+        <item>@color/red_500</item>
+        <item>@color/colorPrimary</item>
+        <item>@color/pink</item>
+    </integer-array>
 </resources>

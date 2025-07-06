@@ -11,34 +11,35 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.example.echochat.R
 import com.example.echochat.databinding.FragmentChatBinding
 import com.example.echochat.model.Message
 import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
-import com.example.echochat.util.APP_ID
-import com.example.echochat.util.APP_SIGN
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.CHECK
+import com.example.echochat.util.UiState
 import com.example.echochat.util.formatOnlyDate
 import com.example.echochat.util.myFriend
 import com.example.echochat.util.myUser
+import com.example.echochat.util.setAnimationRotate
 import com.example.echochat.util.toast
+import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Indicator
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.gson.Gson
-import com.zegocloud.uikit.prebuilt.call.ZegoUIKitPrebuiltCallService
-import com.zegocloud.uikit.prebuilt.call.invite.ZegoUIKitPrebuiltCallInvitationConfig
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -68,6 +69,19 @@ class ChatFragment : Fragment() {
     private var webSocket: WebSocket? = null
     private var isNotInit: Boolean = false
     private var isWebSocketConnected: Boolean = false
+
+    //bottom sheet dialog for image and video
+    private var imageUri: Uri? = null
+    private lateinit var dialog: BottomSheetDialog
+
+    //bottom sheet
+    private lateinit var responseAdapter: ListItemAllOptionGenerate
+    private lateinit var textViewNoData: TextView
+    private lateinit var textViewLoading: TextView
+    private lateinit var textViewOptions: TextView
+    private lateinit var linearProgressIndicator: LinearProgressIndicator
+    private lateinit var recyclerViewResponse: RecyclerView
+    private lateinit var dialogResponse: BottomSheetDialog
 
     @Inject
     lateinit var httpClient: OkHttpClient
@@ -137,17 +151,29 @@ class ChatFragment : Fragment() {
         Log.i("CHATFRAG", "onViewCreated")
         binding.viewModel = viewModel
         initView()
+        initBottomSheetResponse()
         observeValues()
         setClicks()
         binding.buttonTakePhoto.setOnClickListener {
             showBottomSheet()
         }
 
-        if(myFriend != null){
+        if (myFriend != null) {
             Log.i("MYTAG12", "Friend: ${myFriend!!.name}")
             getReadyVideoCall(myFriend!!)
             getReadyAudioCall(myFriend!!)
         }
+    }
+
+    private fun initBottomSheetResponse() {
+        val dialogView = layoutInflater.inflate(R.layout.bottom_sheet_list_response, null)
+        dialogResponse = BottomSheetDialog(requireContext())
+        dialogResponse.setContentView(dialogView)
+        recyclerViewResponse = dialogView.findViewById(R.id.recycleViewResponse)
+        linearProgressIndicator = dialogView.findViewById(R.id.progressIndicator)
+        textViewNoData = dialogView.findViewById(R.id.tv_no_data)
+        textViewLoading = dialogView.findViewById(R.id.textViewGenerating)
+        textViewOptions = dialogView.findViewById(R.id.textViewOptions)
     }
 
     private fun getReadyVideoCall(targetUser: User) {
@@ -223,30 +249,60 @@ class ChatFragment : Fragment() {
 
         chatAdapter = ChatAdapter(viewModel)
 
-        with(binding) {
-            messagesRecyclerView.setHasFixedSize(true)
-            messagesRecyclerView.adapter = chatAdapter
-
-            messagesRecyclerView.addOnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
-                if (bottom < oldBottom)
-                    messagesRecyclerView.layoutManager?.smoothScrollToPosition(
-                        messagesRecyclerView,
-                        null,
-                        chatAdapter.itemCount
-                    )
-            }
+        binding.messagesRecyclerView.apply {
+            setHasFixedSize(true)
+            adapter = chatAdapter
         }
+
+    }
+
+    private fun eventClickChooseResponse(message: String) {
+        binding.editTextMessage.setText(message)
+        dialogResponse.dismiss()
     }
 
     private fun observeValues() {
+
+        viewModel.responseUiState.observe(viewLifecycleOwner) { responseState ->
+            when (responseState) {
+                is UiState.Loading -> {
+                    showBottomSheetResponses()
+                    linearProgressIndicator.isVisible = true
+                    recyclerViewResponse.isVisible = false
+                    textViewNoData.isVisible = false
+                    textViewLoading.isVisible = true
+                    textViewOptions.isVisible = false
+
+                }
+
+                is UiState.NoData -> {
+                    recyclerViewResponse.isVisible = false
+                    textViewNoData.isVisible = true
+                    linearProgressIndicator.isVisible = false
+                    textViewLoading.isVisible = false
+                }
+
+                else -> {
+                    linearProgressIndicator.isVisible = false
+                    recyclerViewResponse.isVisible = true
+                    textViewNoData.isVisible = false
+                    textViewLoading.isVisible = false
+                    textViewOptions.isVisible = true
+                    responseAdapter = ListItemAllOptionGenerate(
+                        viewModel.generateResponseAI.value ?: emptyList(),
+                        ::eventClickChooseResponse
+                    )
+                    recyclerViewResponse.adapter = responseAdapter
+                    recyclerViewResponse.setHasFixedSize(true)
+                }
+            }
+        }
+
         viewModel.fileUrl.observe(viewLifecycleOwner) { fileUrl ->
             if (fileUrl != null) {
-                val bundle = bundleOf(
-                    "chatId" to CHAT_ID,
-                    "imageUrl" to fileUrl
-                )
-                findNavController().navigate(R.id.slidingImageFragment, bundle)
-                viewModel.clearFileUrl()
+                SlidingImageDialogFragment
+                    .newInstance(chatId = CHAT_ID, imageUrl = fileUrl)
+                    .show(parentFragmentManager, "SlidingImageDialog")
             }
         }
 
@@ -320,9 +376,9 @@ class ChatFragment : Fragment() {
         }
     }
 
-
-    private var imageUri: Uri? = null
-    private lateinit var dialog: BottomSheetDialog
+    private fun showBottomSheetResponses() {
+        dialogResponse.show()
+    }
 
     private val resultContract =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->

@@ -67,8 +67,7 @@
             android:layout_height="match_parent"
             android:background="@drawable/rounded_top"
             android:clipToOutline="true"
-            android:orientation="vertical"
-            tools:targetApi="s">
+            android:orientation="vertical">
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabIndicator"

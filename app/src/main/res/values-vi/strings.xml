@@ -73,4 +73,7 @@
     <string name="vietnamese">Tiếng Việt</string>
     <string name="english">Tiếng Anh</string>
     <string name="let_start_a_chat">Hãy gửi lời chào</string>
+    <string name="option">Lựa chọn:</string>
+    <string name="generating_responses">Đang tạo các phản hồi...</string>
+    <string name="options">Các lựa chọn</string>
 </resources>

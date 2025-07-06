@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.echochat"
-        minSdk = 26
+        minSdk = 33
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -31,17 +31,35 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
-    buildFeatures {
-        viewBinding = true
-        dataBinding = true
+    viewBinding {
+        enable = true
     }
+
+    dataBinding {
+        enable = true
+    }
+
+    android {
+        packaging {
+            resources {
+                excludes.add("META-INF/INDEX.LIST")
+                excludes.add("META-INF/DEPENDENCIES")
+                excludes.add("META-INF/LICENSE")
+                excludes.add("META-INF/LICENSE.txt")
+                excludes.add("META-INF/NOTICE")
+                excludes.add("META-INF/NOTICE.txt")
+                excludes.add("META-INF/ASL2.0")
+            }
+        }
+    }
+
 }
 
 dependencies {
@@ -120,4 +138,11 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
+
+    // ✅ For ai gemini
+    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
+    implementation("com.google.firebase:firebase-ai")
+
+    implementation ("com.guolindev.permissionx:permissionx:1.7.1")
+
 }

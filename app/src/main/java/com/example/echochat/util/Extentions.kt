@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -84,6 +86,22 @@ suspend fun <T> handleNetworkCall(
     }
 }
 
+fun View.setAnimationRotate(time: Long, rotateValue: Float){
+    disable()
+    animate().rotationBy(rotateValue).setDuration(time).start()
+    Handler(Looper.getMainLooper()).postDelayed({
+        enabled()
+    }, time)
+}
+
+fun View.disable(){
+    isEnabled = false
+}
+
+fun View.enabled(){
+    isEnabled = true
+}
+
 fun formatMessageDate(sendingTime: Date?): String {
     if (sendingTime == null) return ""
     val sendingDateTime = LocalDateTime.ofInstant(sendingTime.toInstant(), java.time.ZoneId.systemDefault())
@@ -110,11 +128,13 @@ var myUser: User?
         SharedPreferencesReManager.saveData(USER_SESSION, value)
     }
 
+
 var myFriend: User?
     get() = SharedPreferencesReManager.getData(FRIEND_SESSION, User::class.java)
     set(value) {
         SharedPreferencesReManager.saveData(FRIEND_SESSION, value)
     }
+
 
 var tokenApi: String?
     get() = SharedPreferencesReManager.getData(TOKEN_KEY, String::class.java)

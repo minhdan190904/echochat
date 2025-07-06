@@ -1,14 +1,13 @@
 {
   "project_info": {
-    "project_number": "458510703569",
-    "firebase_url": "https://minhdanmessage-default-rtdb.firebaseio.com",
-    "project_id": "minhdanmessage",
-    "storage_bucket": "minhdanmessage.appspot.com"
+    "project_number": "411418036966",
+    "project_id": "echochat-6f8ca",
+    "storage_bucket": "echochat-6f8ca.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:458510703569:android:fb04e8230580da56d19ef0",
+        "mobilesdk_app_id": "1:411418036966:android:90529e7dabe87b59e78927",
         "android_client_info": {
           "package_name": "com.example.echochat"
         }
@@ -16,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBzsf2wxJ-Zw-Rp0vCNk1oJnFDuQcZDDIY"
+          "current_key": "AIzaSyAKy4viA5fNtLU-YFjxxgQofIpK7I6qeKo"
         }
       ],
       "services": {
