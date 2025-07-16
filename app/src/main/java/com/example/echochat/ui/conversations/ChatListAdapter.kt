@@ -32,7 +32,7 @@ class ChatListAdapter : ListAdapter<Chat, ChatListAdapter.ChatListViewHolder>(Ch
         @SuppressLint("SetTextI18n")
         fun bind(chat: Chat) {
             val otherUser = if (chat.user1.id == myUser?.id) chat.user2 else chat.user1
-
+            chat.messageList.sortBy { it.sendingTime }
             chat.getLastMessage()?.let { msg ->
                 bind.tvUserLastMessage.text = if(msg.messageType == Message.MessageType.IMAGE) {
                     if(msg.sender?.id == myUser?.id) {

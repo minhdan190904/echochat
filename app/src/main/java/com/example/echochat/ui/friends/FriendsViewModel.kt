@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import com.example.echochat.model.FriendRequest
 import com.example.echochat.model.dto.FriendRequestDTO
@@ -14,10 +15,16 @@ import com.example.echochat.repository.ChatRepository
 import com.example.echochat.repository.FriendRequestRepository
 import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.util.CHAT_ID
+import com.example.echochat.util.NORMAL_CLOSURE_STATUS
+import com.example.echochat.util.REQUEST_REQUEST
+import com.example.echochat.util.RETRY_TIME_WEB_SOCKET
 import com.example.echochat.util.UiState
 import com.example.echochat.util.myUser
+import com.example.echochat.util.toast
 import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -34,7 +41,7 @@ class FriendsViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val chatRepository: ChatRepository,
     private val httpClient: OkHttpClient,
-    @Named("request") private val requestRequest: Request,
+    @Named(REQUEST_REQUEST) private val requestRequest: Request,
     private val networkMonitor: NetworkMonitor
 
 ) : ViewModel() {
@@ -66,10 +73,11 @@ class FriendsViewModel @Inject constructor(
     val chatId: LiveData<Int> = _chatId
 
     private val _chatUiState = MutableLiveData<UiState<Nothing>>()
-    val chatUiState: LiveData<UiState<Nothing>> = _chatUiState
 
-    private val gson = Gson()
-    private lateinit var webSocket: WebSocket
+    private var webSocket: WebSocket? = null
+
+    private var isWebSocketConnected: Boolean = false
+    private var isWebSocketConnecting: Boolean = false
 
     init {
         networkMonitor.isNetworkAvailable.observeForever { isNetworkAvailable ->
@@ -92,9 +100,22 @@ class FriendsViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        disconnectWebSocket()
+    }
+
     private fun connectWebSocket() {
+        if (isWebSocketConnected || isWebSocketConnecting) return
+        disconnectWebSocket()
+        isWebSocketConnecting = true
+
         webSocket = httpClient.newWebSocket(requestRequest, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
+                viewModelScope.launch {
+                    isWebSocketConnected = true
+                    isWebSocketConnecting = false
+                }
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -106,17 +127,44 @@ class FriendsViewModel @Inject constructor(
                 }
             }
 
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                viewModelScope.launch {
+                    isWebSocketConnected = false
+                    isWebSocketConnecting = false
+                    if (code != NORMAL_CLOSURE_STATUS && networkMonitor.isNetworkConnected()) {
+                        connectWebSocket()
+                    } else {
+                        Log.e("FriendsViewModel", "Network is not available, cannot reconnect WebSocket")
+                    }
+                }
+            }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 viewModelScope.launch {
-                    Log.i("MYTAG", t.message.toString())
+                    isWebSocketConnected = false
+                    isWebSocketConnecting = false
+                    if(networkMonitor.isNetworkConnected()) {
+                        delay(RETRY_TIME_WEB_SOCKET)
+                        if (isActive) {
+                            connectWebSocket()
+                        }
+                    } else {
+                        Log.e("ChatFragment", "Network is not available, cannot reconnect WebSocket")
+                    }
                 }
             }
         })
     }
 
+    private fun disconnectWebSocket() {
+        webSocket?.close(1000, "ViewModel cleared")
+        webSocket = null
+        isWebSocketConnected = false
+        isWebSocketConnecting = false
+    }
+
     private fun listenerWebSocket(message: String) {
-        webSocket.send(message)
+        webSocket?.send(message)
     }
 
     fun getMyFriendUser() {

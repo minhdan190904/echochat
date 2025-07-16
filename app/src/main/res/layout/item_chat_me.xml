@@ -50,6 +50,17 @@
             android:layout_marginBottom="12dp"/>
 
         <TextView
+            android:id="@+id/tv_message_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Sent"
+            android:textSize="14sp"
+            android:paddingVertical="8dp"
+            android:paddingHorizontal="4dp"
+            app:layout_constraintEnd_toStartOf="@+id/tv_message"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
             android:id="@+id/tv_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -79,7 +90,7 @@
             android:id="@+id/loading_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Đang gửi..."
+            android:text="@string/ang_g_i"
             app:chipIcon="@drawable/ic_loading"
             app:chipIconTint="@color/colorPrimary"
             app:chipBackgroundColor="@color/colorWhite"

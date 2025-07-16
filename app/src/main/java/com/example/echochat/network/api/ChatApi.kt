@@ -35,6 +35,12 @@ interface ChatApi {
         @Body message: Message
     ): ResResponse<Message>
 
+    @PUT("/chats/send_message_sync")
+    suspend fun sendMessageSync(
+        @Query("chatId") chatId: Int,
+        @Body message: Message
+    ): ResResponse<Message>
+
     @PUT("/chats/updateSeenLastMessage")
     suspend fun updateSeenLastMessage(
         @Query("chatId") chatId: Int

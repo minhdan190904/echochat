@@ -13,6 +13,7 @@ navigationFragmentKtx = "2.8.8"
 navigationUiKtx = "2.8.8"
 firebaseMessagingKtx = "24.1.0"
 swiperefreshlayout = "1.1.0"
+hiltWork = "1.2.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

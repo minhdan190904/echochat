@@ -7,6 +7,9 @@ import com.example.echochat.network.api.FriendRequestApi
 import com.example.echochat.network.api.NotificationApi
 import com.example.echochat.network.api.UserApi
 import com.example.echochat.util.BASE_DOMAIN
+import com.example.echochat.util.CHAT_REQUEST
+import com.example.echochat.util.REQUEST_REQUEST
+import com.example.echochat.util.STATUS_REQUEST
 import com.example.echochat.util.myUser
 import com.example.echochat.util.tokenApi
 import dagger.Module
@@ -83,20 +86,20 @@ object ApiModule {
     fun provideNotificationApi(retrofit: Retrofit): NotificationApi = retrofit.create(NotificationApi::class.java)
 
     @Provides
-    @Named("chat")
+    @Named(CHAT_REQUEST)
     fun provideChatRequest(): Request {
         return Request.Builder().url("wss://${BASE_DOMAIN}/chat/${myUser?.id}").build()
     }
 
     @Provides
     @Singleton
-    @Named("request")
+    @Named(REQUEST_REQUEST)
     fun provideRequestRequest(): Request {
         return Request.Builder().url("wss://${BASE_DOMAIN}/request").build()
     }
 
     @Provides
-    @Named("status")
+    @Named(STATUS_REQUEST)
     fun provideStatusRequest(): Request {
         return Request.Builder().url("wss://${BASE_DOMAIN}/status/${myUser?.id}").build()
     }

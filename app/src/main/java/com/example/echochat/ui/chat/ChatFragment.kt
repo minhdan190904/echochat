@@ -1,5 +1,6 @@
 package com.example.echochat.ui.chat
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -11,8 +12,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
-import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
@@ -29,19 +28,23 @@ import com.example.echochat.model.User
 import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.util.CHAT_ID
+import com.example.echochat.util.CHAT_REQUEST
 import com.example.echochat.util.CHECK
+import com.example.echochat.util.NORMAL_CLOSURE_STATUS
+import com.example.echochat.util.RETRY_TIME_WEB_SOCKET
 import com.example.echochat.util.UiState
+import com.example.echochat.util.equalsTime
 import com.example.echochat.util.formatOnlyDate
 import com.example.echochat.util.myFriend
 import com.example.echochat.util.myUser
-import com.example.echochat.util.setAnimationRotate
 import com.example.echochat.util.toast
-import com.google.android.gms.common.internal.safeparcel.SafeParcelable.Indicator
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.gson.Gson
 import com.zegocloud.uikit.service.defines.ZegoUIKitUser
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -69,8 +72,9 @@ class ChatFragment : Fragment() {
     private var webSocket: WebSocket? = null
     private var isNotInit: Boolean = false
     private var isWebSocketConnected: Boolean = false
+    private var isWebSocketConnecting: Boolean = false
+    private var isReadyChat: Boolean = false
 
-    //bottom sheet dialog for image and video
     private var imageUri: Uri? = null
     private lateinit var dialog: BottomSheetDialog
 
@@ -87,7 +91,7 @@ class ChatFragment : Fragment() {
     lateinit var httpClient: OkHttpClient
 
     @Inject
-    @Named("chat")
+    @Named(CHAT_REQUEST)
     lateinit var requestChat: Request
 
     @Inject
@@ -98,7 +102,6 @@ class ChatFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Log.i("CHATFRAG", "onCreateView")
         _binding = FragmentChatBinding.inflate(inflater, container, false).apply {
             lifecycleOwner = viewLifecycleOwner
         }
@@ -107,48 +110,126 @@ class ChatFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        Log.i("CHATFRAG", "onStart")
-        CHECK = false
+        isReadyChat = false
         observeNetworkAndConnect()
+    }
+
+    private fun connectWebSocket() {
+        if (isWebSocketConnected || isWebSocketConnecting) return
+        disconnectWebSocket()
+        isWebSocketConnecting = true
+
+        webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                lifecycleScope.launch {
+                    isWebSocketConnected = true
+                    isWebSocketConnecting = false
+                    toast("WebSocket connected")
+                    viewModel.updateSeenLastMessage(CHAT_ID)
+                }
+            }
+
+            override fun onMessage(webSocket: WebSocket, text: String) {
+                lifecycleScope.launch {
+                    try {
+                        val messageDTO = gson.fromJson(text, MessageDTO::class.java)
+                        if (messageDTO.chatId == CHAT_ID && messageDTO.senderId != myUser?.id) {
+                            val sender = viewModel.chat.value?.getOtherUser(myUser!!)
+                            val message = Message(
+                                id = messageDTO.id,
+                                message = messageDTO.message,
+                                sender = sender,
+                                sendingTime = messageDTO.sendingTime ?: Date(),
+                                isSeen = messageDTO.isSeen,
+                                messageType = Message.MessageType.valueOf(
+                                    messageDTO.messageType ?: Message.MessageType.TEXT.name
+                                )
+                            )
+                            Log.i("ChatFragment", "Received WebSocket message: $message")
+                            chatTempList.add(message)
+                            chatTempList.sortBy { it.sendingTime }
+                            chatAdapter.submitList(chatTempList)
+                            binding.messagesRecyclerView.post {
+                                binding.messagesRecyclerView.scrollToPosition(chatTempList.size - 1)
+                            }
+                            viewModel.updateSeenLastMessage(CHAT_ID)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ChatFragment", "Error parsing WebSocket message: $text")
+                    }
+                }
+            }
+
+            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                lifecycleScope.launch {
+                    isWebSocketConnected = false
+                    isWebSocketConnecting = false
+                    Log.i("ChatFragment", "WebSocket closed: $reason")
+                    if (networkMonitor.isNetworkConnected() && code != NORMAL_CLOSURE_STATUS) {
+                        connectWebSocket()
+                    } else {
+                        Log.e("ChatFragment", "Network is not available, cannot reconnect WebSocket")
+                    }
+                }
+            }
+
+            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                lifecycleScope.launch {
+                    isWebSocketConnected = false
+                    isWebSocketConnecting = false
+                    toast("WebSocket error: ${t.message}")
+                    if(networkMonitor.isNetworkConnected()) {
+                        delay(RETRY_TIME_WEB_SOCKET)
+                        if(isActive){
+                            connectWebSocket()
+                        }
+                    } else {
+                        Log.e("ChatFragment", "Network is not available, cannot reconnect WebSocket")
+                    }
+                }
+            }
+        })
     }
 
     private fun observeNetworkAndConnect() {
         networkMonitor.isNetworkAvailable.observe(viewLifecycleOwner) { isAvailable ->
             if (isAvailable) {
-                viewModel.getChat(CHAT_ID, CHECK)
                 if (!isWebSocketConnected) {
                     connectWebSocket()
                 }
+                if (!isReadyChat) {
+                    isReadyChat = true
+                    viewModel.getChat(CHAT_ID, false)
+                }
             } else {
-                CHECK = true
+                if (!isReadyChat) {
+                    isReadyChat = true
+                    viewModel.getChat(CHAT_ID, false)
+                }
                 disconnectWebSocket()
             }
         }
     }
 
     private fun disconnectWebSocket() {
-        webSocket?.let {
-            it.close(1000, "Network unavailable or fragment stopped")
-            isWebSocketConnected = false
-            webSocket = null
-        }
+        webSocket?.close(1000, "Manually closed")
+        webSocket = null
+        isWebSocketConnected = false
+        isWebSocketConnecting = false
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        Log.i("CHATFRAG", "onDestroyView")
         _binding = null
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.i("CHATFRAG", "onDestroy")
         disconnectWebSocket()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.i("CHATFRAG", "onViewCreated")
         binding.viewModel = viewModel
         initView()
         initBottomSheetResponse()
@@ -159,7 +240,6 @@ class ChatFragment : Fragment() {
         }
 
         if (myFriend != null) {
-            Log.i("MYTAG12", "Friend: ${myFriend!!.name}")
             getReadyVideoCall(myFriend!!)
             getReadyAudioCall(myFriend!!)
         }
@@ -208,43 +288,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    private fun connectWebSocket() {
-        disconnectWebSocket()
-        webSocket = httpClient.newWebSocket(requestChat, object : WebSocketListener() {
-            override fun onOpen(webSocket: WebSocket, response: Response) {
-                lifecycleScope.launch {
-                    viewModel.updateSeenLastMessage(CHAT_ID)
-                }
-            }
-
-            override fun onMessage(webSocket: WebSocket, text: String) {
-                lifecycleScope.launch {
-                    try {
-                        val messageDTO = gson.fromJson(text, MessageDTO::class.java)
-                        if (messageDTO.chatId == CHAT_ID && messageDTO.message.sender?.id != myUser?.id) {
-                            chatTempList.add(messageDTO.message)
-                            chatAdapter.submitList(chatTempList)
-                            chatAdapter.notifyDataSetChanged()
-                            binding.messagesRecyclerView.post {
-                                binding.messagesRecyclerView.scrollToPosition(chatTempList.size - 1)
-                            }
-                            viewModel.updateSeenLastMessage(CHAT_ID)
-                        }
-                    } catch (e: Exception) {
-                        Log.e("WebSocket", "JSON Parse Error: ${e.message}")
-                    }
-                }
-            }
-
-            override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-                lifecycleScope.launch {
-                    toast(t.message.toString())
-                    Log.i("WebSocket", "Error: ${t.message}")
-                }
-            }
-        })
-    }
-
     private fun initView() {
 
         chatAdapter = ChatAdapter(viewModel)
@@ -261,6 +304,7 @@ class ChatFragment : Fragment() {
         dialogResponse.dismiss()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun observeValues() {
 
         viewModel.responseUiState.observe(viewLifecycleOwner) { responseState ->
@@ -293,7 +337,6 @@ class ChatFragment : Fragment() {
                         ::eventClickChooseResponse
                     )
                     recyclerViewResponse.adapter = responseAdapter
-                    recyclerViewResponse.setHasFixedSize(true)
                 }
             }
         }
@@ -306,12 +349,53 @@ class ChatFragment : Fragment() {
             }
         }
 
+        viewModel.messageUpdateSentForNotInternet.observe(viewLifecycleOwner) { message ->
+            if (message != null) {
+                val receiver = myUser?.let { viewModel.chat.value?.getOtherUser(it) }
+                val jsonMessage = gson.toJson(
+                    MessageDTO(
+                        id = message.id,
+                        message = message.message,
+                        senderId = message.sender?.id,
+                        receiverId = receiver?.id,
+                        chatId = CHAT_ID,
+                        sendingTime = message.sendingTime,
+                        messageType = message.messageType.name,
+                        isSeen = message.isSeen
+                    )
+                )
+                webSocket?.send(jsonMessage)
+                for (existingMessage in chatTempList) {
+                    if (existingMessage.sendingTime!!.equalsTime(message.sendingTime!!)) {
+                        existingMessage.isUploading = false
+                        break
+                    }
+                }
+                chatTempList.sortBy { it.sendingTime }
+                chatAdapter.submitList(chatTempList)
+                chatAdapter.notifyDataSetChanged()
+            }
+        }
+
+        viewModel.messageUpdateSentForInternet.observe(viewLifecycleOwner) { message ->
+            if (message != null) {
+                for (existingMessage in chatTempList) {
+                    if (existingMessage.sendingTime!!.equalsTime(message.sendingTime!!)) {
+                        existingMessage.isUploading = false
+                        break
+                    }
+                }
+                chatTempList.sortBy { it.sendingTime }
+                chatAdapter.submitList(chatTempList)
+                chatAdapter.notifyDataSetChanged()
+            }
+        }
+
         viewModel.chat.observe(viewLifecycleOwner) { chat ->
-            Log.i("TEST", "chat observe")
-            chatAdapter.submitList(chat.messageList)
             chatTempList.clear()
             chatTempList.addAll(chat.messageList)
-            chatAdapter.notifyDataSetChanged()
+            chatTempList.sortBy { it.sendingTime }
+            chatAdapter.submitList(chatTempList)
             if (chatTempList.isNotEmpty()) {
                 binding.messagesRecyclerView.post {
                     binding.messagesRecyclerView.scrollToPosition(chatTempList.size - 1)
@@ -326,7 +410,6 @@ class ChatFragment : Fragment() {
         }
 
         viewModel.messageData.observe(viewLifecycleOwner) { message ->
-            Log.i("TEST", "message observe")
 
             if (message.messageType == Message.MessageType.IMAGE || message.messageType == Message.MessageType.VIDEO) {
                 val existingMessageIndex = chatTempList.indexOfLast { existingMsg ->
@@ -341,7 +424,7 @@ class ChatFragment : Fragment() {
             } else {
                 chatTempList.add(message)
             }
-
+            chatTempList.sortBy { it.sendingTime }
             chatAdapter.submitList(chatTempList)
             if (chatTempList.isNotEmpty()) {
                 binding.messagesRecyclerView.post {
@@ -352,8 +435,19 @@ class ChatFragment : Fragment() {
             val receiver = myUser?.let { viewModel.chat.value?.getOtherUser(it) }
 
             if (isNotInit) {
-                if (message != null && !message.isUploading) {
-                    val jsonMessage = gson.toJson(MessageDTO(message, receiver?.id!!, CHAT_ID))
+                if (message != null) {
+                    val jsonMessage = gson.toJson(
+                        MessageDTO(
+                            id = message.id,
+                            message = message.message,
+                            senderId = message.sender?.id,
+                            receiverId = receiver?.id,
+                            chatId = CHAT_ID,
+                            sendingTime = message.sendingTime,
+                            messageType = message.messageType.name,
+                            isSeen = message.isSeen
+                        )
+                    )
                     webSocket?.send(jsonMessage)
                 }
             }
@@ -371,7 +465,7 @@ class ChatFragment : Fragment() {
             }
         }
 
-        viewModel.uploadingMessages.observe(viewLifecycleOwner) { uploadingMap ->
+        viewModel.uploadingMessages.observe(viewLifecycleOwner) {
             chatAdapter.notifyDataSetChanged()
         }
     }
@@ -383,7 +477,6 @@ class ChatFragment : Fragment() {
     private val resultContract =
         registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             uri?.let {
-                Log.i("MYTAG", "URI: $it")
                 uploadImageFromUri(it)
             }
         }
@@ -397,6 +490,7 @@ class ChatFragment : Fragment() {
             }
         }
 
+    @SuppressLint("QueryPermissionsNeeded")
     private fun captureImage() {
         val imageFile = createImageFile()
         imageUri = FileProvider.getUriForFile(
@@ -453,7 +547,6 @@ class ChatFragment : Fragment() {
         filePath?.let { path ->
             val file = File(path)
             if (!file.exists()) {
-                Log.e("MYTAG", "File không tồn tại: $path")
                 return
             }
             val mimeType = context?.contentResolver?.getType(uri) ?: return
@@ -478,7 +571,6 @@ class ChatFragment : Fragment() {
     private fun initToolbar(receiver: User) {
         binding.toolbar.tvUserLastSeen.isVisible = true
         val lastSeenTime = receiver.lastSeen
-        Log.i("MYTAG", "Last seen: $lastSeenTime")
         binding.toolbar.tvUserLastSeen.text =
             if (receiver.isOnline) getString(R.string.text_active_now)
             else getString(R.string.last_seen_time, lastSeenTime?.customLastSeenChat())

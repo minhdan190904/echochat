@@ -28,7 +28,7 @@ class ChatAdapter(
 
         item?.let {
             when (itemViewType) {
-                R.layout.item_chat_me -> (holder as MyUserChatViewHolder).bind(it, viewModel)
+                R.layout.item_chat_me -> (holder as MyUserChatViewHolder).bind(it, viewModel, itemCount, position)
                 R.layout.item_chat_other_person -> (holder as OtherUserChatViewHolder).bind(it, viewModel)
             }
 

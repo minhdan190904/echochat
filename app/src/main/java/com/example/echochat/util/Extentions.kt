@@ -29,6 +29,10 @@ fun View.show(){
     visibility = View.VISIBLE
 }
 
+fun Date.equalsTime(other: Date): Boolean {
+    return this.toString() == other.toString()
+}
+
 fun Fragment.toast(content: String){
     Toast.makeText(context, content, Toast.LENGTH_LONG).show()
 }

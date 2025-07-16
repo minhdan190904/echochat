@@ -15,7 +15,6 @@
 
     <style name="Theme.CustomSplashScreenTheme" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/colorWhite</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/app_logo</item>
         <item name="windowSplashScreenAnimationDuration">1300</item>
         <item name="postSplashScreenTheme">@style/Base.Theme.Echochat</item>
     </style>

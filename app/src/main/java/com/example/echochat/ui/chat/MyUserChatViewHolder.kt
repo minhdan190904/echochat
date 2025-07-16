@@ -13,7 +13,7 @@ import com.example.echochat.util.show
 class MyUserChatViewHolder private constructor(private val binding: ItemChatMeBinding) :
     RecyclerView.ViewHolder(binding.root) {
 
-    fun bind(item: Message, viewModel: ChatViewModel?) {
+    fun bind(item: Message, viewModel: ChatViewModel?, listSize: Int, position: Int) {
         binding.apply {
             listItem = item
             imageMessage.isVisible = when (item.messageType) {
@@ -29,16 +29,32 @@ class MyUserChatViewHolder private constructor(private val binding: ItemChatMeBi
             }
 
             tvMessage.isVisible = item.messageType == Message.MessageType.TEXT
-            binding.tvMessage.setOnClickListener {
-                binding.tvTimeSent.isVisible = !binding.tvTimeSent.isVisible
+            tvMessage.setOnClickListener {
+                tvTimeSent.isVisible = !tvTimeSent.isVisible
             }
 
-            binding.imageMessage.setOnClickListener {
-                binding.tvTimeSent.isVisible = !binding.tvTimeSent.isVisible
+            imageMessage.setOnClickListener {
+                tvTimeSent.isVisible = !tvTimeSent.isVisible
                 viewModel?.openSlingImage(item.message)
             }
 
-            if(item.isUploading){
+            if(item.isUploading && item.messageType == Message.MessageType.TEXT) {
+                tvMessageStatus.text = "Pending"
+                tvMessageStatus.show()
+            } else {
+                if(position == listSize - 1) {
+                    tvMessageStatus.show()
+                    if(item.isSeen) {
+                        tvMessageStatus.text = "Seen"
+                    } else {
+                        tvMessageStatus.text = "Sent"
+                    }
+                } else {
+                    tvMessageStatus.hide()
+                }
+            }
+
+            if(item.isUploading && item.messageType != Message.MessageType.TEXT) {
                 showLoadingState()
             } else {
                 hideLoadingState()

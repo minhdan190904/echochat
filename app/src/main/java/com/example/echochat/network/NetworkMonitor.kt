@@ -33,7 +33,7 @@ class NetworkMonitor(context: Context) {
         _isNetworkAvailable.value = isNetworkConnected()
     }
 
-    private fun isNetworkConnected(): Boolean {
+    fun isNetworkConnected(): Boolean {
         val network = connectivityManager.activeNetwork
         val capabilities = connectivityManager.getNetworkCapabilities(network)
         return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true

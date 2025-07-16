@@ -1,11 +1,17 @@
 package com.example.echochat.ui.chat
 
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import com.example.echochat.R
 import com.example.echochat.ai.GenerateResponse
+import com.example.echochat.db.dao.MessageDao
+import com.example.echochat.db.entity.toModel
 import com.example.echochat.util.UiState
 import com.example.echochat.model.Chat
 import com.example.echochat.model.Message
@@ -16,7 +22,9 @@ import com.example.echochat.repository.FileRepository
 import com.example.echochat.repository.NotificationRepository
 import com.example.echochat.util.myFriend
 import com.example.echochat.util.myUser
+import com.google.gson.Gson
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,7 +36,9 @@ import javax.inject.Inject
 class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val fileRepository: FileRepository,
-    private val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository,
+    private val messageDao: MessageDao,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private var chatId: Int? = null
@@ -66,8 +76,16 @@ class ChatViewModel @Inject constructor(
     private val _fileUrl: MutableLiveData<String?> = MutableLiveData<String?>()
     val fileUrl: LiveData<String?> = _fileUrl
 
+    private val _messages = MutableLiveData<List<Message>>()
+    val messages: LiveData<List<Message>> get() = _messages
+
+    private val _messageUpdateSentForInternet = MutableLiveData<Message>()
+    val messageUpdateSentForInternet: LiveData<Message> get() = _messageUpdateSentForInternet
+
+    private val _messageUpdateSentForNotInternet = MutableLiveData<Message>()
+    val messageUpdateSentForNotInternet: LiveData<Message> get() = _messageUpdateSentForNotInternet
+
     fun openSlingImage(fileUrl: String) {
-        Log.i("MYTAG", "FileUrl: $fileUrl")
         _fileUrl.value = fileUrl
     }
 
@@ -80,7 +98,7 @@ class ChatViewModel @Inject constructor(
         val tempMessage = Message(
             idLoading = tempId,
             sender = myUser,
-            message = "Đang gửi...",
+            message = context.getString(R.string.ang_g_i),
             messageType = messageType,
             sendingTime = Date(),
             isSeen = false,
@@ -193,8 +211,6 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-
-
     fun sendTextMessage() {
         messageText.value?.let { msg ->
             val message = Message(
@@ -202,10 +218,9 @@ class ChatViewModel @Inject constructor(
                 message = msg,
                 messageType = Message.MessageType.TEXT,
                 sendingTime = Date(),
+                isUploading = true,
                 isSeen = false
             )
-
-            Log.d("ChatViewModel", "Sending message: $message")
 
             _messageData.value = message
 
@@ -213,15 +228,35 @@ class ChatViewModel @Inject constructor(
 
             chatId?.let {
                 viewModelScope.launch {
-                    val response = chatRepository.sendMessage(it, message)
+                    val (response, workId) = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
+                            if(workId == null) {
+                                _messageUpdateSentForInternet.value = message
+                            }
                             sendNotification(response.data!!, message, "")
                         }
 
                         else -> {
                             Log.e("ChatViewModel", "Lỗi gửi tin nhắn")
                         }
+                    }
+                    workId?.let {
+                        WorkManager.getInstance(context)
+                            .getWorkInfoByIdLiveData(it)
+                            .observeForever { workInfo ->
+                                workInfo?.let { info ->
+                                    if (info.state == WorkInfo.State.SUCCEEDED) {
+                                        val gson = Gson()
+                                        val messageJson = info.outputData.getString("messageJson")
+                                        messageJson?.let { json ->
+                                            val syncedMessage =
+                                                gson.fromJson(json, Message::class.java)
+                                            _messageUpdateSentForNotInternet.value = syncedMessage
+                                        }
+                                    }
+                                }
+                            }
                     }
                 }
             }
@@ -242,8 +277,7 @@ class ChatViewModel @Inject constructor(
 
             chatId?.let {
                 viewModelScope.launch {
-                    Log.i("MYTAG", "Message: $message")
-                    val response = chatRepository.sendMessage(it, message)
+                    val (response, workId) = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
                             sendNotification(response.data!!, message, msg)
@@ -273,7 +307,7 @@ class ChatViewModel @Inject constructor(
             chatId?.let {
                 viewModelScope.launch {
                     Log.i("MYTAG", "Message: $message")
-                    val response = chatRepository.sendMessage(it, message)
+                    val (response, workId) = chatRepository.sendMessage(it, message)
                     when (response) {
                         is NetworkResource.Success -> {
                             sendNotification(response.data!!, message, msg)
