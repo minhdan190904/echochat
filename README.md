@@ -46,6 +46,9 @@ Android Client  <---- WebSocket ---->  Spring Boot Server
 - **Realtime**: WebSocket server  
 - **Database**: MySQL  
 - **Authentication**: Spring Security + JWT
+
+---
+
 ## Các tính năng sắp tới
 - [ ] Chat nhóm (Group chat)  
 - [ ] Dark Mode  
