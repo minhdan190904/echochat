@@ -9,7 +9,29 @@
 
 ---
 
-![Image](https://github.com/user-attachments/assets/fec88a21-981b-4db6-b70c-fdecf605039f)
+## 🖼️ Screenshots (3 ảnh mỗi dòng)
+
+<!-- Gợi ý: đặt ảnh vào thư mục /assets/screenshots và thay src bên dưới.
+     style="max-width:100%; height:auto" giúp responsive, width="30%" để mỗi dòng 3 ảnh. -->
+
+<div align="center">
+  <!-- Row 1 -->
+  <img src="https://github.com/user-attachments/assets/fec88a21-981b-4db6-b70c-fdecf605039f" width="30%" style="max-width:100%; height:auto;" alt="Chat list">
+  <img src="assets/screenshots/screenshot_02.png" width="30%" style="max-width:100%; height:auto;" alt="Chat detail">
+  <img src="assets/screenshots/screenshot_03.png" width="30%" style="max-width:100%; height:auto;" alt="Send image">
+  <br/>
+  <!-- Row 2 -->
+  <img src="assets/screenshots/screenshot_04.png" width="30%" style="max-width:100%; height:auto;" alt="AI suggestion">
+  <img src="assets/screenshots/screenshot_05.png" width="30%" style="max-width:100%; height:auto;" alt="Voice call">
+  <img src="assets/screenshots/screenshot_06.png" width="30%" style="max-width:100%; height:auto;" alt="Video call">
+  <br/>
+  <!-- Row 3 -->
+  <img src="assets/screenshots/screenshot_07.png" width="30%" style="max-width:100%; height:auto;" alt="Contacts">
+  <img src="assets/screenshots/screenshot_08.png" width="30%" style="max-width:100%; height:auto;" alt="Requests">
+  <img src="assets/screenshots/screenshot_09.png" width="30%" style="max-width:100%; height:auto;" alt="Settings">
+</div>
+
+---
 
 ## 🏗️ Kiến trúc hệ thống
 ```
