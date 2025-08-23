@@ -9,6 +9,8 @@
 
 ---
 
+![Image](https://github.com/user-attachments/assets/fec88a21-981b-4db6-b70c-fdecf605039f)
+
 ## 🏗️ Kiến trúc hệ thống
 ```
 Android Client  <---- WebSocket ---->  Spring Boot Server
