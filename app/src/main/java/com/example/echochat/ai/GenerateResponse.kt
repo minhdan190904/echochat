@@ -2,7 +2,6 @@ package com.example.echochat.ai
 
 import android.util.Log
 import com.example.echochat.model.Chat
-import com.example.echochat.model.Message
 import com.example.echochat.model.ResponseWrapper
 import com.example.echochat.util.myUser
 import com.google.firebase.Firebase

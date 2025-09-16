@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.echochat.R
 import com.example.echochat.model.Message
-import com.example.echochat.ui.friends.FriendsViewModel
 import com.example.echochat.util.myUser
 
 class ChatAdapter(

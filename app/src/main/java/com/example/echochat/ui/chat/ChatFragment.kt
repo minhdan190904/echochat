@@ -1,12 +1,10 @@
 package com.example.echochat.ui.chat
 
-import android.annotation.SuppressLint
-import android.app.Activity
+import android.Manifest
 import android.content.Context
-import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +12,7 @@ import android.view.ViewGroup
 import android.webkit.MimeTypeMap
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -29,7 +28,6 @@ import com.example.echochat.model.dto.MessageDTO
 import com.example.echochat.network.NetworkMonitor
 import com.example.echochat.util.CHAT_ID
 import com.example.echochat.util.CHAT_REQUEST
-import com.example.echochat.util.CHECK
 import com.example.echochat.util.NORMAL_CLOSURE_STATUS
 import com.example.echochat.util.RETRY_TIME_WEB_SOCKET
 import com.example.echochat.util.UiState
@@ -124,7 +122,7 @@ class ChatFragment : Fragment() {
                 lifecycleScope.launch {
                     isWebSocketConnected = true
                     isWebSocketConnecting = false
-                    toast("WebSocket connected")
+//                    toast("WebSocket connected")
                     viewModel.updateSeenLastMessage(CHAT_ID)
                 }
             }
@@ -168,7 +166,7 @@ class ChatFragment : Fragment() {
                     if (networkMonitor.isNetworkConnected() && code != NORMAL_CLOSURE_STATUS) {
                         connectWebSocket()
                     } else {
-                        Log.e("ChatFragment", "Network is not available, cannot reconnect WebSocket")
+//                        toast("WebSocket closed: $reason")
                     }
                 }
             }
@@ -177,10 +175,9 @@ class ChatFragment : Fragment() {
                 lifecycleScope.launch {
                     isWebSocketConnected = false
                     isWebSocketConnecting = false
-                    toast("WebSocket error: ${t.message}")
-                    if(networkMonitor.isNetworkConnected()) {
+                    if (networkMonitor.isNetworkConnected()) {
                         delay(RETRY_TIME_WEB_SOCKET)
-                        if(isActive){
+                        if (isActive) {
                             connectWebSocket()
                         }
                     } else {
@@ -216,6 +213,11 @@ class ChatFragment : Fragment() {
         webSocket = null
         isWebSocketConnected = false
         isWebSocketConnecting = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        connectWebSocket()
     }
 
     override fun onDestroyView() {
@@ -289,14 +291,11 @@ class ChatFragment : Fragment() {
     }
 
     private fun initView() {
-
         chatAdapter = ChatAdapter(viewModel)
-
         binding.messagesRecyclerView.apply {
             setHasFixedSize(true)
             adapter = chatAdapter
         }
-
     }
 
     private fun eventClickChooseResponse(message: String) {
@@ -304,7 +303,7 @@ class ChatFragment : Fragment() {
         dialogResponse.dismiss()
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    @Suppress("NotifyDataSetChanged")
     private fun observeValues() {
 
         viewModel.responseUiState.observe(viewLifecycleOwner) { responseState ->
@@ -316,7 +315,6 @@ class ChatFragment : Fragment() {
                     textViewNoData.isVisible = false
                     textViewLoading.isVisible = true
                     textViewOptions.isVisible = false
-
                 }
 
                 is UiState.NoData -> {
@@ -435,21 +433,19 @@ class ChatFragment : Fragment() {
             val receiver = myUser?.let { viewModel.chat.value?.getOtherUser(it) }
 
             if (isNotInit) {
-                if (message != null) {
-                    val jsonMessage = gson.toJson(
-                        MessageDTO(
-                            id = message.id,
-                            message = message.message,
-                            senderId = message.sender?.id,
-                            receiverId = receiver?.id,
-                            chatId = CHAT_ID,
-                            sendingTime = message.sendingTime,
-                            messageType = message.messageType.name,
-                            isSeen = message.isSeen
-                        )
+                val jsonMessage = gson.toJson(
+                    MessageDTO(
+                        id = message.id,
+                        message = message.message,
+                        senderId = message.sender?.id,
+                        receiverId = receiver?.id,
+                        chatId = CHAT_ID,
+                        sendingTime = message.sendingTime,
+                        messageType = message.messageType.name,
+                        isSeen = message.isSeen
                     )
-                    webSocket?.send(jsonMessage)
-                }
+                )
+                webSocket?.send(jsonMessage)
             }
             isNotInit = true
         }
@@ -481,35 +477,45 @@ class ChatFragment : Fragment() {
             }
         }
 
-    private val cameraLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                imageUri?.let {
-                    uploadImageFromUri(it)
-                }
+    private val requestCameraPerm =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) startCameraCapture()
+            else requireContext().toast("Cần quyền Camera để chụp ảnh")
+        }
+
+    private val takePicture =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success && imageUri != null) {
+                uploadImageFromUri(imageUri!!)
             }
         }
 
-    @SuppressLint("QueryPermissionsNeeded")
     private fun captureImage() {
+        val hasCam = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasCam) startCameraCapture()
+        else requestCameraPerm.launch(Manifest.permission.CAMERA)
+    }
+
+    private fun startCameraCapture() {
+        imageUri = createImageUri()
+        takePicture.launch(imageUri)
+    }
+
+    private fun createImageUri(): Uri {
         val imageFile = createImageFile()
-        imageUri = FileProvider.getUriForFile(
-            this.requireContext(),
-            "${requireContext().packageName}.provider",
+        return FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
             imageFile
         )
-
-        val callCameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-            putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-        }
-        if (callCameraIntent.resolveActivity(requireActivity().packageManager) != null) {
-            cameraLauncher.launch(callCameraIntent)
-        }
     }
 
     private fun getFileFromUri(context: Context, uri: Uri): File? {
         val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-
         val mineType = context.contentResolver.getType(uri)
         val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mineType) ?: "tmp"
         val fileName = "${System.currentTimeMillis()}.$extension"

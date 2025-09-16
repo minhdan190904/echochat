@@ -241,23 +241,6 @@ class ChatViewModel @Inject constructor(
                             Log.e("ChatViewModel", "Lỗi gửi tin nhắn")
                         }
                     }
-                    workId?.let {
-                        WorkManager.getInstance(context)
-                            .getWorkInfoByIdLiveData(it)
-                            .observeForever { workInfo ->
-                                workInfo?.let { info ->
-                                    if (info.state == WorkInfo.State.SUCCEEDED) {
-                                        val gson = Gson()
-                                        val messageJson = info.outputData.getString("messageJson")
-                                        messageJson?.let { json ->
-                                            val syncedMessage =
-                                                gson.fromJson(json, Message::class.java)
-                                            _messageUpdateSentForNotInternet.value = syncedMessage
-                                        }
-                                    }
-                                }
-                            }
-                    }
                 }
             }
         }

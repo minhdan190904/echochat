@@ -1,9 +1,10 @@
 package com.example.echochat.ui.profile
 
+import android.Manifest
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
-import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -14,6 +15,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
@@ -45,6 +47,24 @@ class UpdateProfileFragment : Fragment() {
     private var imageUri: Uri? = null
     private val viewModel: UpdateProfileViewModel by viewModels()
 
+    private val requestCameraPerm =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                startCameraCapture()
+            } else {
+                requireContext().toast("Permission denied")
+            }
+        }
+
+    private val takePictureLauncher =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success && imageUri != null) {
+                uploadImageFromUri(imageUri!!)
+            } else {
+                Log.i("UpdateProfile", "TakePicture canceled or failed")
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -60,7 +80,7 @@ class UpdateProfileFragment : Fragment() {
             findNavController().popBackStack()
         }
         binding.tvUpdateProfile.setOnClickListener {
-            toast(viewModel.name.value +  " " + viewModel.email.value)
+            toast(viewModel.name.value + " " + viewModel.email.value)
         }
         binding.btnChangeProfile.setOnClickListener {
             showBottomSheet()
@@ -70,7 +90,7 @@ class UpdateProfileFragment : Fragment() {
             showDatePicker()
         }
 
-        with(binding){
+        with(binding) {
             etEmail.addTextChangedListener {
                 val email = getEmail()
                 when {
@@ -120,13 +140,9 @@ class UpdateProfileFragment : Fragment() {
         binding.tvUpdateProfile.isEnabled = isEmailValid && isNameValid
     }
 
-    private fun getName(): String {
-        return binding.etFullName.text.toString().trim()
-    }
+    private fun getName(): String = binding.etFullName.text.toString().trim()
 
-    private fun getEmail(): String {
-        return binding.etEmail.text.toString().trim()
-    }
+    private fun getEmail(): String = binding.etEmail.text.toString().trim()
 
     private fun showDatePicker() {
         val calendar = Calendar.getInstance()
@@ -194,24 +210,31 @@ class UpdateProfileFragment : Fragment() {
         }
     }
 
-    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            imageUri?.let {
-                uploadImageFromUri(it)
-            }
+
+    private fun captureImage() {
+        val hasCam = ContextCompat.checkSelfPermission(
+            requireContext(),
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (hasCam) {
+            startCameraCapture()
+        } else {
+            requestCameraPerm.launch(Manifest.permission.CAMERA)
         }
     }
 
-    private fun captureImage() {
-        val imageFile = createImageFile()
-        imageUri = FileProvider.getUriForFile(this.requireContext(), "${requireContext().packageName}.provider", imageFile)
+    private fun startCameraCapture() {
+        // Tạo file và uri qua FileProvider (authority: <package>.fileprovider)
+        val file = createImageFile()
+        imageUri = FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            file
+        )
 
-        val callCameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE).apply {
-            putExtra(MediaStore.EXTRA_OUTPUT, imageUri)
-        }
-        if (callCameraIntent.resolveActivity(requireActivity().packageManager) != null) {
-            cameraLauncher.launch(callCameraIntent)
-        }
+        // Launch TakePicture
+        takePictureLauncher.launch(imageUri)
     }
 
     private fun createImageFile(): File {
@@ -244,7 +267,7 @@ class UpdateProfileFragment : Fragment() {
         return file
     }
 
-    private fun showBottomSheet(){
+    private fun showBottomSheet() {
         val dialogView = layoutInflater.inflate(R.layout.bottom_sheet_dialog_choose_image_option, null)
         dialog = BottomSheetDialog(this.requireContext())
         dialog.setContentView(dialogView)
@@ -258,5 +281,4 @@ class UpdateProfileFragment : Fragment() {
         }
         dialog.show()
     }
-
 }
